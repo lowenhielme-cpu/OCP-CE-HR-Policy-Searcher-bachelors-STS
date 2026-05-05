@@ -5,7 +5,7 @@ import ModeSelector from './ModeSelector';
 import RegionDropdown from './RegionDropdown';
 
 function AgentPanel() {
-    const [region, setRegion] = useState('eu');
+    const [selectedRegions, setSelectedRegions] = useState(['eu']);
     const [mode, setMode] = useState('discover');
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -14,17 +14,19 @@ function AgentPanel() {
     const chatbotRef = useRef(null);
 
     const getScanCommand = () => {
-        const selectedRegion = region.toUpperCase();
+        const selectedRegionText = selectedRegions
+            .map((region) => region.toUpperCase())
+            .join(', ');
 
         if (mode === 'discover') {
-            return `--discover ${selectedRegion}`;
+            return `--discover ${selectedRegionText}`;
         }
 
         if (mode === 'deep') {
-            return `--deep Scan ${selectedRegion}`;
+            return `--deep Scan ${selectedRegionText}`;
         }
 
-        return `Scan ${selectedRegion}`;
+        return `Scan ${selectedRegionText}`;
     };
 
     const connectWebSocket = () => {
@@ -73,8 +75,8 @@ function AgentPanel() {
             <section className="settings-panel" aria-label="Search settings">
                 <h2 className="panel-heading">Search settings</h2>
                 <RegionDropdown
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
+                    selectedItems={selectedRegions}
+                    onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
                 />
                 <ModeSelector
                     value={mode}
@@ -84,7 +86,7 @@ function AgentPanel() {
                     type="button"
                     className="scan-button"
                     onClick={scanSelectedRegion}
-                    disabled={!isConnected || isLoading || !region || !mode}
+                    disabled={!isConnected || isLoading || selectedRegions.length === 0 || !mode}
                 >
                     Scan
                 </button>
