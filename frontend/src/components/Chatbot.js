@@ -18,7 +18,7 @@ import {
 import { ChatProvider, useChat, useChatStore, useMessageIds } from '@mui/x-chat/headless';
 
 const CONVERSATION_ID = 'cli-agent-conv';
-const RESPONSE_TIMEOUT_MS = 120000;
+const RESPONSE_TIMEOUT_MS = 1200000;
 
 const chatUsers = {
   agent: {
@@ -99,6 +99,7 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
   return new ReadableStream({
     start(controller) {
       const messageId = `response-${Date.now()}`;
+      const textId = `${messageId}-text`;
       let settled = false;
 
       const cleanup = () => {
@@ -110,22 +111,68 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
         onRunningChange?.(false);
       };
 
-      const settleWithText = (responseText) => {
+      const startMessage = () => {
+        controller.enqueue({ type: 'start', messageId });
+        controller.enqueue({ type: 'text-start', id: textId });
+      };
+
+      const enqueueDelta = (delta) => {
+        if (settled) return;
+        controller.enqueue({ type: 'text-delta', id: textId, delta });
+      };
+
+      const settleFinish = () => {
         if (settled) return;
         settled = true;
         cleanup();
-        enqueueTextResponse(controller, messageId, responseText);
+        controller.enqueue({ type: 'text-end', id: textId });
+        controller.enqueue({ type: 'finish', messageId });
+        controller.close();
       };
 
       const settleWithError = (responseText) => {
         if (settled) return;
         settled = true;
         cleanup();
-        enqueueTextResponse(controller, messageId, responseText);
+        controller.enqueue({ type: 'text-delta', id: textId, delta: responseText });
+        controller.enqueue({ type: 'text-end', id: textId });
+        controller.enqueue({ type: 'finish', messageId });
+        controller.close();
       };
 
       const handleMessage = (event) => {
-        settleWithText(event.data);
+        if (settled) return;
+
+        let payload;
+        try {
+          payload = JSON.parse(event.data);
+        } catch {
+          enqueueDelta(event.data);
+          return;
+        }
+
+        switch (payload.type) {
+          case 'text':
+            enqueueDelta(payload.content || '');
+            break;
+          case 'tool_call':
+            enqueueDelta(`\n[tool_call ${payload.name}] ${JSON.stringify(payload.input)}\n`);
+            break;
+          case 'tool_result':
+            enqueueDelta(`\n[tool_result ${payload.name}] ${JSON.stringify(payload.result)}\n`);
+            break;
+          case 'complete':
+            if (payload.response) {
+              enqueueDelta(payload.response);
+            }
+            settleFinish();
+            break;
+          case 'error':
+            settleWithError(payload.content || 'Agent error');
+            break;
+          default:
+            enqueueDelta(event.data);
+        }
       };
 
       const handleError = () => {
@@ -133,7 +180,7 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
       };
 
       const handleClose = () => {
-        settleWithError('Disconnected from CLI agent');
+        settleWithError('Disconnected from policy agent');
       };
 
       const handleAbort = () => {
@@ -145,7 +192,7 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
       };
 
       const timeoutId = setTimeout(() => {
-        settleWithError('The CLI agent did not respond before the request timed out.');
+        settleWithError('The agent did not respond before the request timed out.');
       }, RESPONSE_TIMEOUT_MS);
 
       ws.addEventListener('message', handleMessage);
@@ -154,6 +201,7 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
       signal?.addEventListener('abort', handleAbort);
 
       onRunningChange?.(true);
+      startMessage();
       ws.send(JSON.stringify({ message: text }));
     },
   });

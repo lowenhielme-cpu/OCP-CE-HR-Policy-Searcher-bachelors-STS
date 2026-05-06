@@ -32,7 +32,7 @@ function AgentPanel() {
     const connectWebSocket = () => {
         if (wsRef.current) return;
 
-        const ws = new WebSocket('ws://localhost:8001/ws');
+        const ws = new WebSocket('ws://localhost:8000/api/agent/ws');
         wsRef.current = ws;
 
         ws.onopen = () => {
@@ -40,7 +40,7 @@ function AgentPanel() {
             setChatNotice({
                 id: Date.now(),
                 type: 'system',
-                text: 'Connected to CLI agent!',
+                text: 'Connected to policy agent API!',
             });
         };
 
