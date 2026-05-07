@@ -138,11 +138,11 @@ function buildTreeData({ domains, groups, regions, categories, tags }) {
       label: 'Tags',
       children: tagItems,
     },
-    {
+    /*{
       id: 'section:domains',
       label: 'Domains',
       children: buildDomainItems(domains),
-    },
+    },*/
   ].filter((item) => item.children.length > 0);
 }
 
