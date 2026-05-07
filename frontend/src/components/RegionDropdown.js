@@ -128,12 +128,12 @@ function buildTreeData({ domains, groups, regions, categories, tags }) {
       label: 'Regions',
       children: buildRegionItems(domains, regions),
     },
-    {
+   /* {
       id: 'section:categories',
       label: 'Categories',
       children: categoryItems,
-    },
-    {
+    },/*
+    /*{
       id: 'section:tags',
       label: 'Tags',
       children: tagItems,
