@@ -137,7 +137,7 @@ function buildTreeData({ domains, groups, regions, categories, tags }) {
       id: 'section:tags',
       label: 'Tags',
       children: tagItems,
-    }, */
+    },
     /*{
       id: 'section:domains',
       label: 'Domains',

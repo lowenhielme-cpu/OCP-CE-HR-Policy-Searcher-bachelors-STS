@@ -206,31 +206,37 @@ function AgentPanel() {
     return (
         <div className="app-panel">
             <section className="settings-panel" aria-label="Search settings">
-                <h2 className="panel-heading">Search settings</h2>
-                <RegionDropdown
-                    selectedItems={selectedRegions}
-                    onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
-                />
-                <ModeSelector
-                    value={mode}
-                    onChange={setMode}
-                />
-                <button
-                    type="button"
-                    className="scan-button"
-                    onClick={scanSelectedRegion}
-                    disabled={isBusy || selectedRegions.length === 0 || !mode}
-                >
-                    {isScanRunning ? 'Scan running' : 'Scan'}
-                </button>
-                <button
-                    type="button"
-                    className="stop-scan-button"
-                    onClick={stopActiveScan}
-                    disabled={!isScanRunning}
-                >
-                    Stop scan
-                </button>
+                <div>
+                    <h2 className="panel-heading">Search settings</h2>
+                    <div className="region-dropdown-scroll">
+                        <RegionDropdown
+                            selectedItems={selectedRegions}
+                            onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
+                        />
+                    </div>
+                    <ModeSelector
+                        value={mode}
+                        onChange={setMode}
+                    />
+                </div>
+                <div className="agent-action-row">
+                    <button
+                        type="button"
+                        className="scan-button"
+                        onClick={scanSelectedRegion}
+                        disabled={isBusy || selectedRegions.length === 0 || !mode}
+                    >
+                        {isScanRunning ? 'Scan running' : 'Scan'}
+                    </button>
+                    <button
+                        type="button"
+                        className="stop-scan-button"
+                        onClick={stopActiveScan}
+                        disabled={!isScanRunning}
+                    >
+                        Stop scan
+                    </button>
+                </div>
             </section>
 
             <section className="chat-panel" aria-label="Agent chat">

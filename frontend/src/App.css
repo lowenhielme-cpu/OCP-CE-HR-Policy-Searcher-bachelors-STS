@@ -101,7 +101,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
   background-color: #fdfdfd;
   padding: 1em;
   border-radius: 8px;
@@ -110,6 +110,12 @@
 .settings-panel,
 .chat-panel {
   min-width: 0;
+}
+
+.settings-panel {
+  display: flex;
+  min-height: 520px;
+  flex-direction: column;
 }
 
 .panel-heading {
@@ -131,6 +137,15 @@
   min-width: 150px;
   background-color: white;
   border-radius: 6px;
+}
+
+.region-dropdown-scroll {
+  border-radius: 6px;
+  max-height: 40vh;
+  min-height: 40vh;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 1em;
 }
 
 .mode-field {
@@ -166,8 +181,6 @@
 }
 
 .scan-button {
-  margin-top: 20px;
-  margin-right: 10px;
   padding: 12px 22px;
   border: none;
   border-radius: 6px;
@@ -183,7 +196,6 @@
 }
 
 .stop-scan-button {
-  margin-top: 20px;
   padding: 12px 22px;
   border: none;
   border-radius: 6px;
@@ -196,6 +208,14 @@
 .stop-scan-button:disabled {
   background-color: #999;
   cursor: not-allowed;
+}
+
+.agent-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 20px;
+  flex-wrap: wrap;
 }
 
 .button {
