@@ -1,6 +1,8 @@
 # Checklist and planning
 
 ## Administration
+- [] Connecting with API key in the UI
+- [x] Cost approximation for prompts
 - [] Settings window for connecting with API key
 - [x] Cost estimate for scans
 - [] Cost approximation for prompts
@@ -9,7 +11,7 @@
 - [] Info text stating that cost estimate is just an estimate
 
 ## Chat section
-- [] API Backend connection
+- [x] API Backend connection
 - [x] Send button
 - [] Separated handling of message types
 - [] Transparency of AI thinking
@@ -35,3 +37,5 @@
 ## Other
 - [] File for labels?
 - [] Copyright stuff for MUI
+- [] Remove ToDos
+- [] Clean and add comments
