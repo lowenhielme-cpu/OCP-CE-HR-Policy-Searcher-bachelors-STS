@@ -113,7 +113,7 @@ function buttonStyle(variant, disabled) {
   };
 }
 
-function ApiKeySettingsModal({ open, onClose, connected, onConnect }) {
+function ApiKeySettingsModal({ open, onClose }) {
   const [status, setStatus] = useState(null);
   const [apiKey, setApiKey] = useState('');
   const [message, setMessage] = useState('');
@@ -186,7 +186,6 @@ function ApiKeySettingsModal({ open, onClose, connected, onConnect }) {
 
   if (!open) return null;
 
-  const connectDisabled = isBusy || connected;
   const saveDisabled = isBusy || !apiKey.trim();
 
   return (
@@ -205,14 +204,6 @@ function ApiKeySettingsModal({ open, onClose, connected, onConnect }) {
               <span style={styles.label}>Current key</span>
               <span style={styles.keyValue}>{status.masked}</span>
             </div>
-            <button
-              type="button"
-              style={buttonStyle('save', connectDisabled)}
-              onClick={onConnect}
-              disabled={connectDisabled}
-            >
-              {connected ? 'Connected' : 'Connect to CLI agent'}
-            </button>
             <button
               type="button"
               style={buttonStyle('danger', isBusy)}

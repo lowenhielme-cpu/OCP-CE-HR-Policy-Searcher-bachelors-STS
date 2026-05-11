@@ -42,13 +42,19 @@ function AgentPanel() {
         const ws = new WebSocket(`${WS_BASE_URL}/api/agent/ws`);
         wsRef.current = ws;
 
+        ws.onopen = () => {
+            setIsConnected(true);
+        };
+
         ws.onclose = () => {
             wsRef.current = null;
+            setIsConnected(false);
             setIsChatRunning(false);
         };
 
         ws.onerror = (error) => {
             console.error('WebSocket error:', error);
+            setIsConnected(false);
             setIsChatRunning(false);
             pushNotice('error', 'Connection error.');
         };
@@ -416,8 +422,6 @@ function AgentPanel() {
                 <ApiKeySettingsModal
                     open={isSettingsOpen}
                     onClose={() => setIsSettingsOpen(false)}
-                    connected={isConnected}
-                    onConnect={connectWebSocket}
                 />
 
                 <Chatbot
