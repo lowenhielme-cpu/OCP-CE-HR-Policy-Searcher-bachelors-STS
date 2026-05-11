@@ -4,7 +4,7 @@ from datetime import datetime, date
 from enum import Enum
 from typing import Optional, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -315,9 +315,17 @@ class ScanRequest(BaseModel):
     max_concurrent: int = Field(default=5, ge=1, le=20)
     skip_llm: bool = False
     dry_run: bool = False
+    deep: bool = False
+    discover: bool = False
     category: Optional[str] = None
     tags: Optional[list[str]] = None
     policy_type: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_scan_mode(self) -> "ScanRequest":
+        if self.deep and self.discover:
+            raise ValueError("Choose one scan mode: standard, deep, or discover")
+        return self
 
 
 class AnalyzeRequest(BaseModel):

@@ -1,8 +1,31 @@
 .policy-list {
-    width: min(100%, 1100px);
+    width: 100%;
     box-sizing: border-box;
     color: #1f2937;
     text-align: left;
+}
+
+.policy-list-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.policy-list-header h2 {
+    margin: 0;
+}
+
+.policy-list-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.policy-list-filter {
+    background-color: #ffffff;
 }
 
 .policy-list-items {
@@ -424,6 +447,16 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .policy-list-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .policy-list-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
     .saved-policy-header {
         flex-direction: column;
         align-items: flex-start;

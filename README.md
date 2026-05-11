@@ -661,9 +661,14 @@ curl -X POST http://localhost:8000/api/scans \
 | `max_concurrent` | integer (1-20) | `5` | Parallel workers |
 | `skip_llm` | boolean | `false` | Skip LLM analysis (keywords only) |
 | `dry_run` | boolean | `false` | Resolve domains without scanning |
+| `deep` | boolean | `false` | Use deeper crawl defaults (`max_depth=5`, `max_pages=500`, keyword score `2.0`) |
+| `discover` | boolean | `false` | Run the agent discovery workflow for `domains` instead of a direct scan |
 | `category` | string | `null` | Additional category filter |
 | `tags` | string[] | `null` | Additional tag filters |
 | `policy_type` | string | `null` | Additional policy type filter |
+
+Choose one scan mode per request: standard (`deep=false`, `discover=false`),
+deep (`deep=true`), or discover (`discover=true`).
 
 **Response:**
 ```json

@@ -48,6 +48,11 @@ function App() {
           Components
         </a>
         <AgentPanel />
+        <section className="component-test-stage" aria-label="Policy list test stage">
+          <PolicyList />
+        </section>
+
+
       </main>
     </div>
   );

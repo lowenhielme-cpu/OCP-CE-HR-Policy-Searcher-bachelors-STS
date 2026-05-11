@@ -1,17 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ApiKeySettingsModal, { apiKeySettingsButtonStyle } from './ApiKeySettingsModal';
 import Chatbot from './Chatbot';
 import ModeSelector from './ModeSelector';
 import RegionDropdown from './RegionDropdown';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
 
 function AgentPanel() {
     const [selectedRegions, setSelectedRegions] = useState([]);
-    const [mode, setMode] = useState('discover');
+    const [mode, setMode] = useState('standard');
     const [isConnected, setIsConnected] = useState(false);
     const [isChatRunning, setIsChatRunning] = useState(false);
+    const [isScanRequestRunning, setIsScanRequestRunning] = useState(false);
     const [activeScanId, setActiveScanId] = useState(null);
     const [costEstimate, setCostEstimate] = useState(null);
     const [costStatus, setCostStatus] = useState('idle');
@@ -20,7 +21,12 @@ function AgentPanel() {
     const wsRef = useRef(null);
     const scanWsRef = useRef(null);
     const isScanRunning = Boolean(activeScanId);
-    const isBusy = isChatRunning || isScanRunning;
+    const isBusy = isChatRunning || isScanRunning || isScanRequestRunning;
+    const isStandardMode = mode === 'standard';
+    const scanOptions = {
+        discover: mode === 'discover',
+        deep: mode === 'deep',
+    };
 
     const pushNotice = (type, text) => {
         setChatNotice({
@@ -30,22 +36,15 @@ function AgentPanel() {
         });
     };
 
-    const connectWebSocket = () => {
+    const connectWebSocket = useCallback(() => {
         if (wsRef.current) return;
 
         const ws = new WebSocket(`${WS_BASE_URL}/api/agent/ws`);
         wsRef.current = ws;
 
-        ws.onopen = () => {
-            setIsConnected(true);
-            pushNotice('system', 'Connected to policy agent API.');
-        };
-
         ws.onclose = () => {
-            setIsConnected(false);
             wsRef.current = null;
             setIsChatRunning(false);
-            pushNotice('system', 'Disconnected from CLI agent.');
         };
 
         ws.onerror = (error) => {
@@ -53,7 +52,7 @@ function AgentPanel() {
             setIsChatRunning(false);
             pushNotice('error', 'Connection error.');
         };
-    };
+    }, []);
 
     const buildScanRequest = () => {
         const normalizeTarget = (item) => {
@@ -82,9 +81,11 @@ function AgentPanel() {
         return {
             request: {
                 domains: targets[0] || 'all',
-                max_concurrent: mode === 'deep' ? 10 : 5,
+                max_concurrent: scanOptions.deep ? 10 : 5,
                 skip_llm: false,
                 dry_run: false,
+                deep: scanOptions.deep,
+                discover: scanOptions.discover,
                 category: categories[0] || null,
                 tags: tags.length > 0 ? tags : null,
             },
@@ -125,60 +126,65 @@ function AgentPanel() {
     );
 
     useEffect(() => {
-    let isCurrent = true;
+        let isCurrent = true;
+        const normalizeTarget = (item) => {
+            if (item.startsWith('group:') && item.includes(':region:')) {
+                return item.slice(item.lastIndexOf(':region:') + ':region:'.length);
+            }
+            if (item.startsWith('group:')) {
+                return item.slice('group:'.length);
+            }
+            if (item.startsWith('region:')) {
+                return item.slice('region:'.length);
+            }
+            return item;
+        };
 
-    // Used to extract the actual target from various possible region/group identifiers for cost estimation
-    // TODO: It should be possible to get correct formating directly from the API call, but this is a quick fix. First we need to setup the RegionDropdown in a more intuitive way.
-    const normalizeTarget = (item) => {
-        if (item.startsWith('group:') && item.includes(':region:')) {
-            return item.slice(item.lastIndexOf(':region:') + ':region:'.length);
+        const categories = selectedRegions.filter((item) => item.startsWith('category:'));
+        const tags = selectedRegions.filter((item) => item.startsWith('tag:'));
+
+        if (!isStandardMode) {
+            setCostEstimate(null);
+            setCostStatus('standard_only');
+            return () => {
+                isCurrent = false;
+            };
         }
-        if (item.startsWith('group:')) {
-            return item.slice('group:'.length);
+
+        const targets = selectedRegions.filter(
+            (item) => !item.startsWith('category:') && !item.startsWith('tag:'),
+        ).map(normalizeTarget);
+
+        if (targets.length === 0) {
+            setCostEstimate(null);
+            setCostStatus(selectedRegions.length === 0 ? 'idle' : 'filters_only');
+            return () => {
+                isCurrent = false;
+            };
         }
-        if (item.startsWith('region:')) {
-            return item.slice('region:'.length);
-        }
-        return item;
-    };
 
-    const categories = selectedRegions.filter((item) => item.startsWith('category:'));
-    const tags = selectedRegions.filter((item) => item.startsWith('tag:'));
+        setCostStatus('loading');
 
-    const targets = selectedRegions
-        .filter((item) => !item.startsWith('category:') && !item.startsWith('tag:'))
-        .map(normalizeTarget);
+        Promise.all(targets.map((target) => getCostEstimate(target)))
+            .then((estimates) => {
+                if (!isCurrent) return;
+                setCostEstimate({
+                    ...sumCostEstimates(estimates),
+                    target_count: targets.length,
+                    has_filters: categories.length > 0 || tags.length > 0,
+                });
+                setCostStatus('ready');
+            })
+            .catch(() => {
+                if (!isCurrent) return;
+                setCostEstimate(null);
+                setCostStatus('error');
+            });
 
-    if (targets.length === 0) {
-        setCostEstimate(null);
-        setCostStatus(selectedRegions.length === 0 ? 'idle' : 'filters_only');
         return () => {
             isCurrent = false;
         };
-    }
-
-    setCostStatus('loading');
-
-    Promise.all(targets.map((target) => getCostEstimate(target)))
-        .then((estimates) => {
-            if (!isCurrent) return;
-            setCostEstimate({
-                ...sumCostEstimates(estimates),
-                target_count: targets.length,
-                has_filters: categories.length > 0 || tags.length > 0,
-            });
-            setCostStatus('ready');
-        })
-        .catch(() => {
-            if (!isCurrent) return;
-            setCostEstimate(null);
-            setCostStatus('error');
-        });
-
-    return () => {
-        isCurrent = false;
-    };
-}, [selectedRegions]);
+    }, [selectedRegions, isStandardMode]);
 
     const getCostEstimateText = () => {
         if (costStatus === 'loading') {
@@ -186,6 +192,9 @@ function AgentPanel() {
         }
         if (costStatus === 'filters_only') {
             return 'Select a scan target';
+        }
+        if (costStatus === 'standard_only') {
+            return 'Cost estimates are only available in standard mode.';
         }
         if (costStatus === 'error') {
             return 'Estimate unavailable';
@@ -262,7 +271,7 @@ function AgentPanel() {
     };
 
     const scanSelectedRegion = async () => {
-        if (isScanRunning || selectedRegions.length === 0) return;
+        if (isBusy || selectedRegions.length === 0) return;
 
         const { request, ignoredTargets } = buildScanRequest();
 
@@ -274,7 +283,13 @@ function AgentPanel() {
         }
 
         try {
-            pushNotice('system', `Starting scan for "${request.domains}" via /api/scans.`);
+            setIsScanRequestRunning(true);
+            pushNotice(
+                'system',
+                request.discover
+                    ? `Starting discovery for "${request.domains}" via /api/scans.`
+                    : `Starting scan for "${request.domains}" via /api/scans.`,
+            );
             const response = await fetch(`${API_BASE_URL}/api/scans`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -287,6 +302,14 @@ function AgentPanel() {
             }
 
             const scan = await response.json();
+            if (scan.discover) {
+                pushNotice(
+                    'system',
+                    scan.response || `Discovery for "${request.domains}" completed.`,
+                );
+                return;
+            }
+
             setActiveScanId(scan.scan_id);
             pushNotice(
                 'system',
@@ -295,6 +318,8 @@ function AgentPanel() {
             connectScanWebSocket(scan.scan_id);
         } catch (error) {
             pushNotice('error', `Could not start scan: ${error.message}`);
+        } finally {
+            setIsScanRequestRunning(false);
         }
     };
 
@@ -321,10 +346,14 @@ function AgentPanel() {
         }
     };
 
-    useEffect(() => () => {
-        scanWsRef.current?.close();
-        wsRef.current?.close();
-    }, []);
+    useEffect(() => {
+        connectWebSocket();
+
+        return () => {
+            scanWsRef.current?.close();
+            wsRef.current?.close();
+        };
+    }, [connectWebSocket]);
 
     return (
         <div className="app-panel">
@@ -350,9 +379,9 @@ function AgentPanel() {
                         type="button"
                         className="scan-button"
                         onClick={scanSelectedRegion}
-                        disabled={isBusy || selectedRegions.length === 0 || !mode}
+                        disabled={isBusy || selectedRegions.length === 0}
                     >
-                        {isScanRunning ? 'Scan running' : 'Scan'}
+                        {isScanRequestRunning || isScanRunning ? 'Scan running' : 'Scan'}
                     </button>
                     <button
                         type="button"
@@ -393,7 +422,6 @@ function AgentPanel() {
 
                 <Chatbot
                     wsRef={wsRef}
-                    isConnected={isConnected}
                     notice={chatNotice}
                     onRunningChange={setIsChatRunning}
                 />
