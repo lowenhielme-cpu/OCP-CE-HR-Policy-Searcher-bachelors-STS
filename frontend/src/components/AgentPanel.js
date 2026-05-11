@@ -3,7 +3,7 @@ import Chatbot from './Chatbot';
 import ModeSelector from './ModeSelector';
 import RegionDropdown from './RegionDropdown';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
 
 function AgentPanel() {
@@ -124,68 +124,65 @@ function AgentPanel() {
     );
 
     useEffect(() => {
-    let isCurrent = true;
-
-    // Used to extract the actual target from various possible region/group identifiers for cost estimation
-    // TODO: It should be possible to get correct formating directly from the API call, but this is a quick fix. First we need to setup the RegionDropdown in a more intuitive way.
-    const normalizeTarget = (item) => {
-        if (item.startsWith('group:') && item.includes(':region:')) {
-            return item.slice(item.lastIndexOf(':region:') + ':region:'.length);
-        }
-        if (item.startsWith('group:')) {
-            return item.slice('group:'.length);
-        }
-        if (item.startsWith('region:')) {
-            return item.slice('region:'.length);
-        }
-        return item;
-    };
-
-    const categories = selectedRegions.filter((item) => item.startsWith('category:'));
-    const tags = selectedRegions.filter((item) => item.startsWith('tag:'));
-
-    if (!isStandardMode) {
-        setCostEstimate(null);
-        setCostStatus('standard_only');
-        return () => {
-            isCurrent = false;
+        let isCurrent = true;
+        const normalizeTarget = (item) => {
+            if (item.startsWith('group:') && item.includes(':region:')) {
+                return item.slice(item.lastIndexOf(':region:') + ':region:'.length);
+            }
+            if (item.startsWith('group:')) {
+                return item.slice('group:'.length);
+            }
+            if (item.startsWith('region:')) {
+                return item.slice('region:'.length);
+            }
+            return item;
         };
-    }
 
-    const targets = selectedRegions
-        .filter((item) => !item.startsWith('category:') && !item.startsWith('tag:'))
-        .map(normalizeTarget);
+        const categories = selectedRegions.filter((item) => item.startsWith('category:'));
+        const tags = selectedRegions.filter((item) => item.startsWith('tag:'));
 
-    if (targets.length === 0) {
-        setCostEstimate(null);
-        setCostStatus(selectedRegions.length === 0 ? 'idle' : 'filters_only');
-        return () => {
-            isCurrent = false;
-        };
-    }
-
-    setCostStatus('loading');
-
-    Promise.all(targets.map((target) => getCostEstimate(target)))
-        .then((estimates) => {
-            if (!isCurrent) return;
-            setCostEstimate({
-                ...sumCostEstimates(estimates),
-                target_count: targets.length,
-                has_filters: categories.length > 0 || tags.length > 0,
-            });
-            setCostStatus('ready');
-        })
-        .catch(() => {
-            if (!isCurrent) return;
+        if (!isStandardMode) {
             setCostEstimate(null);
-            setCostStatus('error');
-        });
+            setCostStatus('standard_only');
+            return () => {
+                isCurrent = false;
+            };
+        }
 
-    return () => {
-        isCurrent = false;
-    };
-}, [selectedRegions, isStandardMode]);
+        const targets = selectedRegions.filter(
+            (item) => !item.startsWith('category:') && !item.startsWith('tag:'),
+        ).map(normalizeTarget);
+
+        if (targets.length === 0) {
+            setCostEstimate(null);
+            setCostStatus(selectedRegions.length === 0 ? 'idle' : 'filters_only');
+            return () => {
+                isCurrent = false;
+            };
+        }
+
+        setCostStatus('loading');
+
+        Promise.all(targets.map((target) => getCostEstimate(target)))
+            .then((estimates) => {
+                if (!isCurrent) return;
+                setCostEstimate({
+                    ...sumCostEstimates(estimates),
+                    target_count: targets.length,
+                    has_filters: categories.length > 0 || tags.length > 0,
+                });
+                setCostStatus('ready');
+            })
+            .catch(() => {
+                if (!isCurrent) return;
+                setCostEstimate(null);
+                setCostStatus('error');
+            });
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [selectedRegions, isStandardMode]);
 
     const getCostEstimateText = () => {
         if (costStatus === 'loading') {
