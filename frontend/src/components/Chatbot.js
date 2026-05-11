@@ -25,7 +25,7 @@ const CONVERSATION_ID = 'cli-agent-conv';
 const chatUsers = {
   agent: {
     id: 'cli-agent',
-    displayName: 'CLI Agent',
+    displayName: 'Policy Agent',
     role: 'assistant',
   },
   you: {
@@ -43,22 +43,13 @@ const chatUsers = {
 const initialConversations = [
   {
     id: CONVERSATION_ID,
-    title: 'CLI Agent',
+    title: 'Policy Agent',
     subtitle: 'Connected to the policy search agent',
     participants: [chatUsers.agent, chatUsers.you],
   },
 ];
 
-const initialMessages = [
-  createTextMessage({
-    id: 'system-welcome',
-    conversationId: CONVERSATION_ID,
-    role: 'system',
-    author: chatUsers.system,
-    createdAt: new Date().toISOString(),
-    text: 'Connect to the CLI agent, then send a command or run a scan.',
-  }),
-];
+const initialMessages = [];
 
 function SendIcon() {
   return (
@@ -343,19 +334,65 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
   });
 }
 
+function waitForSocketOpen(ws, signal) {
+  if (!ws) {
+    return Promise.reject(new Error('Socket is not available'));
+  }
+
+  if (ws.readyState === WebSocket.OPEN) {
+    return Promise.resolve(ws);
+  }
+
+  if (ws.readyState !== WebSocket.CONNECTING) {
+    return Promise.reject(new Error('Socket is not available'));
+  }
+
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      ws.removeEventListener('open', handleOpen);
+      ws.removeEventListener('error', handleError);
+      ws.removeEventListener('close', handleClose);
+      signal?.removeEventListener('abort', handleAbort);
+    };
+    const handleOpen = () => {
+      cleanup();
+      resolve(ws);
+    };
+    const handleError = () => {
+      cleanup();
+      reject(new Error('Socket connection failed'));
+    };
+    const handleClose = () => {
+      cleanup();
+      reject(new Error('Socket closed'));
+    };
+    const handleAbort = () => {
+      cleanup();
+      reject(new DOMException('Aborted', 'AbortError'));
+    };
+
+    ws.addEventListener('open', handleOpen);
+    ws.addEventListener('error', handleError);
+    ws.addEventListener('close', handleClose);
+    signal?.addEventListener('abort', handleAbort);
+  });
+}
+
 function createCliAgentAdapter({ wsRef, onRunningChange }) {
   return {
     async sendMessage({ message, signal }) {
       const text = getMessageText(message).trim();
-      const ws = wsRef.current;
+      let ws = wsRef.current;
 
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
+      try {
+        ws = await waitForSocketOpen(ws, signal);
+      } catch {
         return new ReadableStream({
           start(controller) {
             enqueueTextResponse(
               controller,
               `response-${Date.now()}`,
-              'Connect to the CLI agent before sending a command.',
+              'Policy agent connection is unavailable.',
             );
           },
         });
@@ -375,13 +412,13 @@ function createCliAgentAdapter({ wsRef, onRunningChange }) {
 }
 
 const ChatbotInner = React.forwardRef(function ChatbotInner(
-  { disabled, notice, onRunningChange },
+  { notice, onRunningChange },
   ref,
 ) {
   const { sendMessage, isStreaming } = useChat();
   const chatStore = useChatStore();
   const messageIds = useMessageIds();
-  const inputDisabled = disabled || isStreaming;
+  const inputDisabled = isStreaming;
   const handledNoticeIdRef = React.useRef(null);
 
   React.useImperativeHandle(
@@ -445,11 +482,7 @@ const ChatbotInner = React.forwardRef(function ChatbotInner(
       <ChatMessageList renderItem={renderItem} items={messageIds} />
       <ChatComposer disabled={inputDisabled}>
         <ChatComposerTextArea
-          placeholder={
-            disabled
-              ? 'Connect to the CLI agent before sending commands...'
-              : 'Type your command here...'
-          }
+          placeholder="Type your command here..."
           disabled={inputDisabled}
         />
         <ChatComposerToolbar>
@@ -463,7 +496,7 @@ const ChatbotInner = React.forwardRef(function ChatbotInner(
 });
 
 const Chatbot = React.forwardRef(function Chatbot(
-  { wsRef, isConnected, notice, onRunningChange },
+  { wsRef, notice, onRunningChange },
   ref,
 ) {
   const adapter = React.useMemo(
@@ -484,18 +517,28 @@ const Chatbot = React.forwardRef(function Chatbot(
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          height: 500,
+          width: '100%',
+          height: '100%',
+          minHeight: 0,
           border: '1px solid',
           borderColor: 'divider',
           borderRadius: 1,
           overflow: 'hidden',
           boxSizing: 'border-box',
+          '& .MuiChatConversation-root': {
+            flex: 1,
+            minHeight: 0,
+          },
+          '& .MuiChatMessageList-root': {
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+          },
           '*, *::before, *::after': { boxSizing: 'inherit' },
         }}
       >
         <ChatbotInner
           ref={ref}
-          disabled={!isConnected}
           notice={notice}
           onRunningChange={onRunningChange}
         />

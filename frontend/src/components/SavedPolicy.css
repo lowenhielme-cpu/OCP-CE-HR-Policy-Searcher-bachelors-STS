@@ -1,5 +1,5 @@
 .policy-list {
-    width: min(100%, 1100px);
+    width: 100%;
     box-sizing: border-box;
     color: #1f2937;
     text-align: left;

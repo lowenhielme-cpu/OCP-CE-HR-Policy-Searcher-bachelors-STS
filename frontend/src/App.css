@@ -76,7 +76,7 @@
 }
 
 .component-test-stage {
-  width: min(100%, 1100px);
+  width: min(80%, 1600px);
   box-sizing: border-box;
   display: flex;
   align-items: stretch;
@@ -95,11 +95,11 @@
 }
 
 .app-panel {
-  width: min(100%, 1100px);
+  width: min(80%, 1600px);
   margin: 20px auto;
   text-align: left;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 24px;
   align-items: stretch;
   background-color: #fdfdfd;
@@ -110,6 +110,11 @@
 .settings-panel,
 .chat-panel {
   min-width: 0;
+}
+
+.chat-panel {
+  display: flex;
+  min-height: 520px;
 }
 
 .settings-panel {
@@ -305,9 +310,10 @@
   margin-top: 20px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .app-panel {
     grid-template-columns: 1fr;
+
   }
 
   .component-test-header,

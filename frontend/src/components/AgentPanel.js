@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Chatbot from './Chatbot';
-import ConnectButton from './ConnectButton';
 import ModeSelector from './ModeSelector';
 import RegionDropdown from './RegionDropdown';
 
@@ -10,7 +9,6 @@ const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
 function AgentPanel() {
     const [selectedRegions, setSelectedRegions] = useState([]);
     const [mode, setMode] = useState('discover');
-    const [isConnected, setIsConnected] = useState(false);
     const [isChatRunning, setIsChatRunning] = useState(false);
     const [activeScanId, setActiveScanId] = useState(null);
     const [costEstimate, setCostEstimate] = useState(null);
@@ -29,22 +27,15 @@ function AgentPanel() {
         });
     };
 
-    const connectWebSocket = () => {
+    const connectWebSocket = useCallback(() => {
         if (wsRef.current) return;
 
         const ws = new WebSocket(`${WS_BASE_URL}/api/agent/ws`);
         wsRef.current = ws;
 
-        ws.onopen = () => {
-            setIsConnected(true);
-            pushNotice('system', 'Connected to policy agent API.');
-        };
-
         ws.onclose = () => {
-            setIsConnected(false);
             wsRef.current = null;
             setIsChatRunning(false);
-            pushNotice('system', 'Disconnected from CLI agent.');
         };
 
         ws.onerror = (error) => {
@@ -52,7 +43,7 @@ function AgentPanel() {
             setIsChatRunning(false);
             pushNotice('error', 'Connection error.');
         };
-    };
+    }, []);
 
     const buildScanRequest = () => {
         const normalizeTarget = (item) => {
@@ -320,10 +311,14 @@ function AgentPanel() {
         }
     };
 
-    useEffect(() => () => {
-        scanWsRef.current?.close();
-        wsRef.current?.close();
-    }, []);
+    useEffect(() => {
+        connectWebSocket();
+
+        return () => {
+            scanWsRef.current?.close();
+            wsRef.current?.close();
+        };
+    }, [connectWebSocket]);
 
     return (
         <div className="app-panel">
@@ -365,24 +360,8 @@ function AgentPanel() {
             </section>
 
             <section className="chat-panel" aria-label="Agent chat">
-                <div className="toolbar-row">
-                    <ConnectButton
-                        connected={isConnected}
-                        onClick={connectWebSocket}
-                        disabled={isConnected}
-                    />
-                    <span className="status-text">
-                        {isScanRunning
-                            ? `Scan ${activeScanId} is running.`
-                            : isConnected
-                                ? 'Ready for CLI agent input.'
-                                : 'Click connect to start using the CLI agent.'}
-                    </span>
-                </div>
-
                 <Chatbot
                     wsRef={wsRef}
-                    isConnected={isConnected}
                     notice={chatNotice}
                     onRunningChange={setIsChatRunning}
                 />
