@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ApiKeySettingsModal, { apiKeySettingsButtonStyle } from './ApiKeySettingsModal';
 import Chatbot from './Chatbot';
-import ConnectButton from './ConnectButton';
 import ModeSelector from './ModeSelector';
 import RegionDropdown from './RegionDropdown';
 
@@ -16,6 +16,7 @@ function AgentPanel() {
     const [costEstimate, setCostEstimate] = useState(null);
     const [costStatus, setCostStatus] = useState('idle');
     const [chatNotice, setChatNotice] = useState(null);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const wsRef = useRef(null);
     const scanWsRef = useRef(null);
     const isScanRunning = Boolean(activeScanId);
@@ -366,19 +367,29 @@ function AgentPanel() {
 
             <section className="chat-panel" aria-label="Agent chat">
                 <div className="toolbar-row">
-                    <ConnectButton
-                        connected={isConnected}
-                        onClick={connectWebSocket}
-                        disabled={isConnected}
-                    />
+                    <button
+                        type="button"
+                        className="button"
+                        style={apiKeySettingsButtonStyle}
+                        onClick={() => setIsSettingsOpen(true)}
+                    >
+                        API key settings
+                    </button>
                     <span className="status-text">
                         {isScanRunning
                             ? `Scan ${activeScanId} is running.`
                             : isConnected
                                 ? 'Ready for CLI agent input.'
-                                : 'Click connect to start using the CLI agent.'}
+                                : 'Open API key settings to configure the CLI agent.'}
                     </span>
                 </div>
+
+                <ApiKeySettingsModal
+                    open={isSettingsOpen}
+                    onClose={() => setIsSettingsOpen(false)}
+                    connected={isConnected}
+                    onConnect={connectWebSocket}
+                />
 
                 <Chatbot
                     wsRef={wsRef}

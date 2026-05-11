@@ -1,0 +1,256 @@
+import React, { useEffect, useState } from 'react';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+
+export const apiKeySettingsButtonStyle = {
+  minHeight: 40,
+  backgroundColor: '#2563eb',
+  color: '#fff',
+};
+
+const styles = {
+  backdrop: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 1000,
+    display: 'grid',
+    placeItems: 'center',
+    padding: 16,
+    background: 'rgba(15, 23, 42, 0.45)',
+  },
+  modal: {
+    width: 'min(100%, 460px)',
+    boxSizing: 'border-box',
+    padding: 20,
+    borderRadius: 8,
+    background: '#ffffff',
+    color: '#111827',
+    boxShadow: '0 18px 60px rgba(15, 23, 42, 0.25)',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  title: {
+    margin: 0,
+    fontSize: 20,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    border: '1px solid #cbd5e1',
+    borderRadius: 6,
+    background: '#ffffff',
+    color: '#111827',
+    cursor: 'pointer',
+    fontSize: 18,
+    lineHeight: 1,
+  },
+  body: {
+    display: 'grid',
+    gap: 12,
+    marginTop: 18,
+  },
+  label: {
+    display: 'block',
+    marginBottom: 6,
+    color: '#334155',
+    fontSize: 14,
+    fontWeight: 700,
+  },
+  keyValue: {
+    display: 'inline-block',
+    padding: '8px 10px',
+    border: '1px solid #cbd5e1',
+    borderRadius: 6,
+    background: '#f8fafc',
+    color: '#111827',
+    fontFamily: 'monospace',
+  },
+  input: {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '10px 12px',
+    border: '1px solid #cbd5e1',
+    borderRadius: 6,
+    color: '#111827',
+  },
+  buttonBase: {
+    minHeight: 40,
+    padding: '10px 14px',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'pointer',
+    fontSize: 15,
+    fontWeight: 700,
+  },
+  saveButton: {
+    background: '#2563eb',
+    color: '#ffffff',
+  },
+  dangerButton: {
+    background: '#ef4444',
+    color: '#ffffff',
+  },
+  disabledButton: {
+    background: '#999',
+    cursor: 'not-allowed',
+  },
+  message: {
+    margin: '14px 0 0',
+    color: '#334155',
+    fontSize: 14,
+  },
+};
+
+function buttonStyle(variant, disabled) {
+  return {
+    ...styles.buttonBase,
+    ...(variant === 'danger' ? styles.dangerButton : styles.saveButton),
+    ...(disabled ? styles.disabledButton : {}),
+  };
+}
+
+function ApiKeySettingsModal({ open, onClose, connected, onConnect }) {
+  const [status, setStatus] = useState(null);
+  const [apiKey, setApiKey] = useState('');
+  const [message, setMessage] = useState('');
+  const [isBusy, setIsBusy] = useState(false);
+
+  const loadStatus = async () => {
+    const response = await fetch(`${API_BASE_URL}/api/settings/api-key`);
+    if (!response.ok) {
+      throw new Error('Could not load API key status.');
+    }
+    setStatus(await response.json());
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    setMessage('');
+    setApiKey('');
+    loadStatus().catch((error) => setMessage(error.message));
+  }, [open]);
+
+  const saveKey = async () => {
+    setIsBusy(true);
+    setMessage('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || 'Could not save API key.');
+      }
+
+      const nextStatus = await response.json();
+      setStatus(nextStatus);
+      setApiKey('');
+      setMessage('API key saved.');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const deleteKey = async () => {
+    setIsBusy(true);
+    setMessage('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Could not delete API key.');
+      }
+
+      setStatus(await response.json());
+      setMessage('API key deleted.');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  if (!open) return null;
+
+  const connectDisabled = isBusy || connected;
+  const saveDisabled = isBusy || !apiKey.trim();
+
+  return (
+    <div style={styles.backdrop} role="presentation">
+      <div style={styles.modal} role="dialog" aria-modal="true" aria-labelledby="api-key-title">
+        <div style={styles.header}>
+          <h2 id="api-key-title" style={styles.title}>API key settings</h2>
+          <button type="button" style={styles.closeButton} onClick={onClose} aria-label="Close settings">
+            x
+          </button>
+        </div>
+
+        {status?.exists ? (
+          <div style={styles.body}>
+            <div>
+              <span style={styles.label}>Current key</span>
+              <span style={styles.keyValue}>{status.masked}</span>
+            </div>
+            <button
+              type="button"
+              style={buttonStyle('save', connectDisabled)}
+              onClick={onConnect}
+              disabled={connectDisabled}
+            >
+              {connected ? 'Connected' : 'Connect to CLI agent'}
+            </button>
+            <button
+              type="button"
+              style={buttonStyle('danger', isBusy)}
+              onClick={deleteKey}
+              disabled={isBusy}
+            >
+              Delete key
+            </button>
+          </div>
+        ) : (
+          <div style={styles.body}>
+            <label style={styles.label} htmlFor="api-key-input">
+              Anthropic API key
+            </label>
+            <input
+              id="api-key-input"
+              type="password"
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder="sk-ant-..."
+              autoComplete="off"
+              style={styles.input}
+            />
+            <button
+              type="button"
+              style={buttonStyle('save', saveDisabled)}
+              onClick={saveKey}
+              disabled={saveDisabled}
+            >
+              Create .env file
+            </button>
+          </div>
+        )}
+
+        {message ? <p style={styles.message}>{message}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+export default ApiKeySettingsModal;

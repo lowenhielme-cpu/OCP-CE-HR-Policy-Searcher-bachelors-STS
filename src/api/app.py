@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..core.log_setup import setup_logging
-from .routes import domains, scans, policies, analysis, agent, logs
+from .routes import domains, scans, policies, analysis, agent, logs, settings
 
 # Resolve .env from project root (2 levels up from src/api/app.py)
 # so credentials load regardless of the process working directory.
@@ -66,6 +66,7 @@ app.include_router(policies.router)
 app.include_router(analysis.router)
 app.include_router(agent.router)
 app.include_router(logs.router)
+app.include_router(settings.router)
 
 
 @app.get("/")

@@ -1,6 +1,8 @@
 """Scan endpoints — start/stop/status + WebSocket progress."""
 
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
 
 from ..deps import get_scan_manager, get_broadcaster, get_policy_store
@@ -19,6 +21,13 @@ async def start_scan(
     store: PolicyStore = Depends(get_policy_store),
 ):
     """Start a new parallel scan. Returns immediately with scan_id."""
+    manager.api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not request.skip_llm and not manager.api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="ANTHROPIC_API_KEY is not configured. Add an API key or enable skip_llm.",
+        )
+
     job = await manager.start_scan(
         domains_group=request.domains,
         max_concurrent=request.max_concurrent,
@@ -94,7 +103,7 @@ async def cancel_scan(
     raise HTTPException(status_code=404, detail=f"Scan '{scan_id}' not running or not found")
 
 
-@router.websocket("/api/scans/{scan_id}/ws")
+@router.websocket("/scans/{scan_id}/ws")
 async def scan_websocket(
     websocket: WebSocket,
     scan_id: str,
