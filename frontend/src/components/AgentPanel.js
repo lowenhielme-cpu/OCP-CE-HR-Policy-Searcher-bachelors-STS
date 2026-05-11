@@ -353,9 +353,10 @@ function AgentPanel() {
     };
 
     useEffect(() => {
-        connectWebSocket();
+        const connectTimer = window.setTimeout(connectWebSocket, 0);
 
         return () => {
+            window.clearTimeout(connectTimer);
             scanWsRef.current?.close();
             wsRef.current?.close();
         };
