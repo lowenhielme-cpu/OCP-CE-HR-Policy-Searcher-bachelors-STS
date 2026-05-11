@@ -7,6 +7,16 @@ import Typography from '@mui/material/Typography';
 
 const cards = [
   {
+    id: 'standard',
+    title: 'Standard',
+    description: 'Scan known sources with normal settings.',
+    tint: '#f8fafc',
+    hoverTint: '#f1f5f9',
+    selectedTint: '#dbe4ef',
+    selectedHoverTint: '#d1d9e3',
+    border: '#a3b1da',
+  },
+  {
     id: 'discover',
     title: 'Discover',
     description: 'Discover new policies and regulations.',
@@ -28,7 +38,7 @@ const cards = [
   },
 ];
 
-function ModeSelector({ value = 'discover', onChange }) {
+function ModeSelector({ value = 'standard', onChange }) {
   return (
     <Box
       sx={{
@@ -57,6 +67,7 @@ function ModeSelector({ value = 'discover', onChange }) {
               disableTouchRipple
               focusRipple={false}
               onClick={() => onChange?.(card.id)}
+              aria-pressed={isSelected}
               sx={{
                 height: '100%',
                 transition: 'none',

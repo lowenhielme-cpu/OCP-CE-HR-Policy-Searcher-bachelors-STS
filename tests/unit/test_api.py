@@ -1,6 +1,6 @@
 """Tests for FastAPI API routes."""
 
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock, AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -214,6 +214,55 @@ class TestPolicyRoutes:
 # --- Scans ---
 
 class TestScanRoutes:
+    def test_start_scan_passes_deep_flag(self, client, mock_manager):
+        job = ScanJob(
+            scan_id="s1",
+            status=ScanStatus.RUNNING,
+            domain_count=1,
+            options={"deep": True},
+        )
+        mock_manager.start_scan = AsyncMock(return_value=job)
+
+        response = client.post("/api/scans", json={"domains": "quick", "deep": True})
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["scan_id"] == "s1"
+        assert data["options"]["deep"] is True
+        mock_manager.start_scan.assert_awaited_once()
+        assert mock_manager.start_scan.await_args.kwargs["deep"] is True
+
+    def test_start_scan_discover_runs_agent_prompt(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+
+        with patch("src.api.routes.scans.PolicyAgent") as agent_cls:
+            agent = agent_cls.return_value
+            agent.run = AsyncMock(return_value="discovery complete")
+            agent.close = AsyncMock()
+
+            response = client.post(
+                "/api/scans",
+                json={"domains": "Poland", "discover": True},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["scan_id"] is None
+        assert data["discover"] is True
+        assert data["deep"] is False
+        assert data["response"] == "discovery complete"
+        agent.run.assert_awaited_once()
+        prompt = agent.run.await_args.args[0]
+        assert "Discover new coverage for Poland" in prompt
+
+    def test_start_scan_rejects_multiple_modes(self, client):
+        response = client.post(
+            "/api/scans",
+            json={"domains": "Poland", "discover": True, "deep": True},
+        )
+
+        assert response.status_code == 422
+
     def test_list_scans_empty(self, client):
         response = client.get("/api/scans")
         assert response.status_code == 200

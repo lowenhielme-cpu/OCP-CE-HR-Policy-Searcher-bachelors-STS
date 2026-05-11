@@ -205,8 +205,17 @@
 }
 
 .cost-estimate.loading,
-.cost-estimate.filters_only {
+.cost-estimate.filters_only,
+.cost-estimate.standard_only {
   color: #555;
+}
+
+.cost-estimate.standard_only {
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 13px;
 }
 
 .cost-estimate.error {

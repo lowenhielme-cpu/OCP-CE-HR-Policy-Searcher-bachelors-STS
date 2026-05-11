@@ -157,5 +157,96 @@
     "referenced_urls": [
       "https://ens.dk/forsyning-og-forbrug/overskudsvarme"
     ]
+  },
+  {
+    "url": "https://www.regeringen.se/rattsliga-dokument/lagradsremiss/2025/02/nya-regler-for-datacenter-och-hallbara-branslen-samt-en-ny-reduktionsplikt/",
+    "policy_name": "Nya regler f\u00f6r datacenter och h\u00e5llbara br\u00e4nslen samt en ny reduktionsplikt",
+    "jurisdiction": "Sweden",
+    "policy_type": "law",
+    "summary": "This Swedish government legislative council referral (lagr\u00e5dsremiss) from the Ministry of Climate and Business proposes new rules implementing parts of the revised Renewable Energy Directive, Fuel Quality Directive, and the recast Energy Efficiency Directive (EED), as well as adapting Swedish law to the ReFuelEU Aviation regulation. A new law on disclosure of data center energy performance is proposed, requiring data centers to report energy usage information to a European database. Exemptions apply to data centers used for security-sensitive activities, defense, or crisis preparedness purposes.",
+    "relevance_score": 6,
+    "effective_date": "2025-07-01",
+    "source_language": "sv",
+    "bill_number": null,
+    "key_requirements": "1. Data centers must report energy performance information (including energy usage) to a European database under a new disclosure law. 2. Exemptions granted for data centers serving security-sensitive, defense, or crisis preparedness purposes. 3. New and amended sustainability criteria for renewable fuels, non-biological renewable fuels, and recycled carbon fuels. 4. New reduction obligation (reduktionsplikt) levels with option to fulfill via fossil-free electricity delivery. 5. Most changes effective 1 July 2025; some sustainability criteria changes effective 1 January 2026 and 1 January 2030.",
+    "discovered_at": "2026-05-11T12:23:49.658679",
+    "crawl_status": "success",
+    "error_details": null,
+    "review_status": "new",
+    "scan_id": "manual-analysis",
+    "domain_id": "regeringen",
+    "verification_flags": [],
+    "referenced_policies": [
+      "Directive on Renewable Energy (revised/amended)",
+      "Fuel Quality Directive (amended)",
+      "Energy Efficiency Directive (recast/omarbetade energieffektivitetsdirektivet)",
+      "EU Regulation ReFuelEU Aviation",
+      "Lagen om skatt p\u00e5 energi (Energy Tax Act)",
+      "Lagen om elcertifikat (Electricity Certificates Act)",
+      "Drivmedelslagen (Fuel Act)",
+      "Budgetpropositionen f\u00f6r 2025 (2025 Budget Bill)"
+    ],
+    "referenced_urls": [
+      "https://www.regeringen.se/rattsliga-dokument/lagradsremiss/2025/02/nya-regler-for-datacenter-och-hallbara-branslen-samt-en-ny-reduktionsplikt/"
+    ]
+  },
+  {
+    "url": "https://www.riksrevisionen.se/granskningar/granskningsrapporter/2022/statliga-insatser-for-att-stimulera-investeringar-i-datacenter.html",
+    "policy_name": "Statliga insatser f\u00f6r att stimulera investeringar i datacenter (RiR 2022:18)",
+    "jurisdiction": "Sweden",
+    "policy_type": "plan",
+    "summary": "This is a Swedish National Audit Office (Riksrevisionen) audit report (RiR 2022:18) examining the effectiveness of state measures to stimulate data center investments, primarily the energy tax reduction introduced in 2017. The report finds that the government failed to consider data centers' potential contributions to energy policy goals, specifically including their role as producers of waste heat (spillv\u00e4rme), their ability to add flexibility to the energy system, and their internal energy efficiency work. The report recommends the government review the energy tax reduction and take measures to link data center policies to energy policy goals.",
+    "relevance_score": 5,
+    "effective_date": "2022-09-01",
+    "source_language": "sv",
+    "bill_number": null,
+    "key_requirements": "Recommendations (not binding requirements): (1) Conduct a review of the energy tax reduction for data centers based on an evaluation of its consequences; (2) Implement measures to connect state data center initiatives with energy policy goals, including waste heat production, grid flexibility, and energy efficiency; (3) Clarify in the governance of state investment promotion (Business Sweden) that informing about national policy goals \u2014 including energy and industry policy \u2014 is part of the mandate for each investment area.",
+    "discovered_at": "2026-05-11T12:26:54.070336",
+    "crawl_status": "success",
+    "error_details": null,
+    "review_status": "new",
+    "scan_id": "manual-analysis",
+    "domain_id": "riksrevisionen",
+    "verification_flags": [],
+    "referenced_policies": [
+      "Lagen (1994:1776) om skatt p\u00e5 energi (LSE)",
+      "Budgetpropositionen f\u00f6r 2017 (energy tax reduction for data centers)",
+      "Budgetpropositionen f\u00f6r 2021 (adjustment of reduced energy tax rate to 0.6 \u00f6re/kWh)",
+      "Energi\u00f6verenskommelsen 2016 (50% more efficient energy use by 2030 compared to 2005)",
+      "Skatteverkets st\u00e4llningstagande 2018-09-19 (clarification on who qualifies for energy tax reduction)",
+      "Utredningen om sektorsneutral och konkurrenskraftig energiskatt p\u00e5 el (2014 government inquiry)"
+    ],
+    "referenced_urls": []
+  },
+  {
+    "url": "https://www.energimyndigheten.se/effektiv-energianvandning/effektiv-energianvandning/lagar-och-krav-inom-energieffektivisering/direktivet-om-energieffektivitet/",
+    "policy_name": "Direktivet om energieffektivitet (EED) / Energieffektiviseringsdirektivet",
+    "jurisdiction": "Sweden (EU-wide directive)",
+    "policy_type": "directive",
+    "summary": "Sweden's Energy Agency (Energimyndigheten) page describes the revised EU Energy Efficiency Directive (2023/1791), which entered into force in October 2023 and must be transposed into Swedish law by 11 October 2025. The directive establishes a binding EU-wide energy consumption cap of 763 Mtoe by 2030 and includes requirements for energy audits, cost-benefit analyses for new installations, and mapping of waste heat and district heating/cooling potential. Large energy users, including data centers, are required to conduct energy audits or implement certified energy management systems.",
+    "relevance_score": 6,
+    "effective_date": "2023-10-10",
+    "source_language": "sv",
+    "bill_number": null,
+    "key_requirements": "1. Binding EU energy consumption cap of 763 Mtoe (8874 TWh) by 2030. 2. Public sector must reduce energy use by 1.9% per year. 3. Energy requirements in public procurement. 4. 3% annual energy-efficient renovation of publicly owned buildings. 5. Large energy users must conduct energy audits or implement certified energy management systems (ISO 50001). 6. Mapping of potential for district heating/cooling and waste heat reuse. 7. Cost-benefit analyses required when building new installations. 8. SMEs to receive information on energy efficiency benefits. 9. Full transposition into Swedish law required by 11 October 2025.",
+    "discovered_at": "2026-05-11T12:27:07.996457",
+    "crawl_status": "success",
+    "error_details": null,
+    "review_status": "new",
+    "scan_id": "manual-analysis",
+    "domain_id": "energimyndigheten",
+    "verification_flags": [],
+    "referenced_policies": [
+      "Direktiv om energieffektivisering 2023/1791 (reviderat EED)",
+      "Energieffektivitet 2012/27/EU",
+      "\u00c4ndring av direktiv om byggnaders energiprestanda och energieffektivitet 2018/844",
+      "Regeringens proposition 2013/14:174 (genomf\u00f6rande av energieffektiviseringsdirektivet)",
+      "Lagen om energikartl\u00e4ggning i stora f\u00f6retag"
+    ],
+    "referenced_urls": [
+      "https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:32023L1791",
+      "https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:32012L0027",
+      "https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:32018L0844"
+    ]
   }
 ]

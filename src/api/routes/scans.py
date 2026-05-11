@@ -1,10 +1,13 @@
 """Scan endpoints — start/stop/status + WebSocket progress."""
 
+import os
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
 
+from ...agent.discovery import build_discovery_prompt
+from ...agent.orchestrator import PolicyAgent
 from ..deps import get_scan_manager, get_broadcaster, get_policy_store
-from ...core.models import ScanRequest
+from ...core.models import DEFAULT_ANALYSIS_MODEL, ScanRequest
 from ...orchestration.events import EventBroadcaster
 from ...orchestration.scan_manager import ScanManager
 from ...storage.store import PolicyStore
@@ -19,11 +22,15 @@ async def start_scan(
     store: PolicyStore = Depends(get_policy_store),
 ):
     """Start a new parallel scan. Returns immediately with scan_id."""
+    if request.discover:
+        return await _run_discovery(request)
+
     job = await manager.start_scan(
         domains_group=request.domains,
         max_concurrent=request.max_concurrent,
         skip_llm=request.skip_llm,
         dry_run=request.dry_run,
+        deep=request.deep,
         category=request.category,
         tags=request.tags,
         policy_type=request.policy_type,
@@ -32,6 +39,55 @@ async def start_scan(
         "scan_id": job.scan_id,
         "status": job.status.value,
         "domain_count": job.domain_count,
+        "options": job.options,
+    }
+
+
+async def _run_discovery(request: ScanRequest):
+    """Run the agent discovery workflow used by `python -m src.agent --discover`."""
+    country = request.domains.strip()
+    if not country:
+        raise HTTPException(status_code=400, detail="discover requires a domains/country value")
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="ANTHROPIC_API_KEY environment variable is not set")
+
+    agent = PolicyAgent(
+        api_key=api_key,
+        model=DEFAULT_ANALYSIS_MODEL,
+        config_dir=os.environ.get("OCP_CONFIG_DIR", "config"),
+        data_dir=os.environ.get("OCP_DATA_DIR", "data"),
+    )
+
+    if request.deep:
+        agent.scan_manager.config.settings.crawl.max_depth = 5
+        agent.scan_manager.config.settings.crawl.max_pages_per_domain = 500
+        agent.scan_manager.config.settings.analysis.min_keyword_score = 2.0
+
+    tools_called: list[str] = []
+
+    def on_tool_call(name: str, input_data: dict):
+        tools_called.append(name)
+
+    try:
+        response_text = await agent.run(
+            build_discovery_prompt(country),
+            on_tool_call=on_tool_call,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    finally:
+        await agent.close()
+
+    return {
+        "scan_id": None,
+        "status": "completed",
+        "domain_count": 0,
+        "discover": True,
+        "deep": request.deep,
+        "response": response_text,
+        "tools_called": tools_called,
     }
 
 

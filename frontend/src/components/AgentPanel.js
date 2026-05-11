@@ -9,9 +9,10 @@ const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
 
 function AgentPanel() {
     const [selectedRegions, setSelectedRegions] = useState([]);
-    const [mode, setMode] = useState('discover');
+    const [mode, setMode] = useState('standard');
     const [isConnected, setIsConnected] = useState(false);
     const [isChatRunning, setIsChatRunning] = useState(false);
+    const [isScanRequestRunning, setIsScanRequestRunning] = useState(false);
     const [activeScanId, setActiveScanId] = useState(null);
     const [costEstimate, setCostEstimate] = useState(null);
     const [costStatus, setCostStatus] = useState('idle');
@@ -19,7 +20,12 @@ function AgentPanel() {
     const wsRef = useRef(null);
     const scanWsRef = useRef(null);
     const isScanRunning = Boolean(activeScanId);
-    const isBusy = isChatRunning || isScanRunning;
+    const isBusy = isChatRunning || isScanRunning || isScanRequestRunning;
+    const isStandardMode = mode === 'standard';
+    const scanOptions = {
+        discover: mode === 'discover',
+        deep: mode === 'deep',
+    };
 
     const pushNotice = (type, text) => {
         setChatNotice({
@@ -81,9 +87,11 @@ function AgentPanel() {
         return {
             request: {
                 domains: targets[0] || 'all',
-                max_concurrent: mode === 'deep' ? 10 : 5,
+                max_concurrent: scanOptions.deep ? 10 : 5,
                 skip_llm: false,
                 dry_run: false,
+                deep: scanOptions.deep,
+                discover: scanOptions.discover,
                 category: categories[0] || null,
                 tags: tags.length > 0 ? tags : null,
             },
@@ -144,6 +152,14 @@ function AgentPanel() {
     const categories = selectedRegions.filter((item) => item.startsWith('category:'));
     const tags = selectedRegions.filter((item) => item.startsWith('tag:'));
 
+    if (!isStandardMode) {
+        setCostEstimate(null);
+        setCostStatus('standard_only');
+        return () => {
+            isCurrent = false;
+        };
+    }
+
     const targets = selectedRegions
         .filter((item) => !item.startsWith('category:') && !item.startsWith('tag:'))
         .map(normalizeTarget);
@@ -177,7 +193,7 @@ function AgentPanel() {
     return () => {
         isCurrent = false;
     };
-}, [selectedRegions]);
+}, [selectedRegions, isStandardMode]);
 
     const getCostEstimateText = () => {
         if (costStatus === 'loading') {
@@ -185,6 +201,9 @@ function AgentPanel() {
         }
         if (costStatus === 'filters_only') {
             return 'Select a scan target';
+        }
+        if (costStatus === 'standard_only') {
+            return 'Cost estimates are only available in standard mode.';
         }
         if (costStatus === 'error') {
             return 'Estimate unavailable';
@@ -261,7 +280,7 @@ function AgentPanel() {
     };
 
     const scanSelectedRegion = async () => {
-        if (isScanRunning || selectedRegions.length === 0) return;
+        if (isBusy || selectedRegions.length === 0) return;
 
         const { request, ignoredTargets } = buildScanRequest();
 
@@ -273,7 +292,13 @@ function AgentPanel() {
         }
 
         try {
-            pushNotice('system', `Starting scan for "${request.domains}" via /api/scans.`);
+            setIsScanRequestRunning(true);
+            pushNotice(
+                'system',
+                request.discover
+                    ? `Starting discovery for "${request.domains}" via /api/scans.`
+                    : `Starting scan for "${request.domains}" via /api/scans.`,
+            );
             const response = await fetch(`${API_BASE_URL}/api/scans`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -286,6 +311,14 @@ function AgentPanel() {
             }
 
             const scan = await response.json();
+            if (scan.discover) {
+                pushNotice(
+                    'system',
+                    scan.response || `Discovery for "${request.domains}" completed.`,
+                );
+                return;
+            }
+
             setActiveScanId(scan.scan_id);
             pushNotice(
                 'system',
@@ -294,6 +327,8 @@ function AgentPanel() {
             connectScanWebSocket(scan.scan_id);
         } catch (error) {
             pushNotice('error', `Could not start scan: ${error.message}`);
+        } finally {
+            setIsScanRequestRunning(false);
         }
     };
 
@@ -349,9 +384,9 @@ function AgentPanel() {
                         type="button"
                         className="scan-button"
                         onClick={scanSelectedRegion}
-                        disabled={isBusy || selectedRegions.length === 0 || !mode}
+                        disabled={isBusy || selectedRegions.length === 0}
                     >
-                        {isScanRunning ? 'Scan running' : 'Scan'}
+                        {isScanRequestRunning || isScanRunning ? 'Scan running' : 'Scan'}
                     </button>
                     <button
                         type="button"
