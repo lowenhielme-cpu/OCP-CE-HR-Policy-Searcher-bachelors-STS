@@ -38,6 +38,7 @@ _project_root = Path(__file__).resolve().parents[2]
 load_dotenv(_project_root / ".env", override=True)
 
 from ..core.log_setup import log_audit_event
+from .discovery import build_discovery_prompt
 
 
 def _print_help():
@@ -566,15 +567,7 @@ def main():
             print("Usage: python -m src.agent --discover <country>")
             print("Example: python -m src.agent --discover Poland")
             sys.exit(1)
-        message = (
-            f"Discover new coverage for {country}. "
-            f"Search for government websites about data center waste heat, "
-            f"energy efficiency, district heating, and heat recovery regulation "
-            f"in {country}. Use the country's native language for search terms "
-            f"when appropriate. Add any relevant government websites you find. "
-            f"Then analyze the most promising pages for policy content. "
-            f"Summarize what you discovered."
-        )
+        message = build_discovery_prompt(country)
         asyncio.run(_run_single(agent, message))
     elif args:
         # Single command

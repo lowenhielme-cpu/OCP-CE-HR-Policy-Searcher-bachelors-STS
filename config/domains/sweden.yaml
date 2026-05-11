@@ -145,3 +145,21 @@ domains:
     verified_by: "auto-generated"
     verified_date: "2026-05-06"
     notes: Auto-generated from https://www.riksdagen.se
+
+  - name: "Riksrevisionen – Audit: State Measures to Stimulate Data Center Investment"
+    id: "riksrevisionen"
+    enabled: true
+    region:
+      - "eu"
+      - "nordic"
+      - "sweden"
+    base_url: "https://www.riksrevisionen.se"
+    start_paths:
+      - "/granskningar/granskningsrapporter/2022/statliga-insatser-for-att-stimulera-investeringar-i-datacenter.html"
+    max_depth: 2
+    language: sv
+    requires_playwright: false
+    rate_limit_seconds: 2.0
+    verified_by: "auto-generated"
+    verified_date: "2026-05-11"
+    notes: Auto-generated from https://www.riksrevisionen.se

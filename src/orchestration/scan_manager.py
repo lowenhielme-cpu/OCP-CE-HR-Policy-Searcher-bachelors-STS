@@ -73,6 +73,7 @@ class ScanManager:
         max_concurrent: int = 5,
         skip_llm: bool = False,
         dry_run: bool = False,
+        deep: bool = False,
         category: Optional[str] = None,
         tags: Optional[list[str]] = None,
         policy_type: Optional[str] = None,
@@ -96,6 +97,8 @@ class ScanManager:
                 d for d in domains
                 if policy_type in d.get("policy_types", [])
             ]
+        if deep:
+            domains = [self._with_deep_scan_defaults(d) for d in domains]
 
         job = ScanJob(
             scan_id=scan_id,
@@ -117,6 +120,7 @@ class ScanManager:
                 "max_concurrent": max_concurrent,
                 "skip_llm": skip_llm,
                 "dry_run": dry_run,
+                "deep": deep,
             },
         )
 
@@ -134,6 +138,15 @@ class ScanManager:
         )
         self._tasks[scan_id] = task
         return job
+
+    @staticmethod
+    def _with_deep_scan_defaults(domain: dict) -> dict:
+        """Apply CLI --deep defaults without mutating shared config."""
+        domain = dict(domain)
+        domain.setdefault("max_depth", 5)
+        domain.setdefault("max_pages", 500)
+        domain.setdefault("min_keyword_score", 2.0)
+        return domain
 
     async def _run_scan(
         self,
