@@ -359,10 +359,10 @@ function AgentPanel() {
 
     return (
         <div className="app-panel">
-            <section className="settings-panel" aria-label="Search settings">
+            <section className="settings-panel" aria-label="Policy Scanner">
                 <div>
                     <div className="settings-heading-row">
-                        <h2 className="panel-heading">Search settings</h2>
+                        <h2 className="panel-heading">Policy Scanner</h2>
                         <button
                             type="button"
                             className="button"
