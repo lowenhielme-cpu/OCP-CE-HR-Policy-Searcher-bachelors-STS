@@ -3,7 +3,6 @@ import ApiKeySettingsModal, { apiKeySettingsButtonStyle } from './ApiKeySettings
 import Chatbot from './Chatbot';
 import ModeSelector from './ModeSelector';
 import RegionSelector from './RegionSelector';
-import HelpWindow, { helpWindowStyle } from './HelpWindow';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
@@ -18,7 +17,6 @@ function AgentPanel() {
     const [costStatus, setCostStatus] = useState('idle');
     const [chatNotice, setChatNotice] = useState(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [hasApiKey, setHasApiKey] = useState(false);
     const wsRef = useRef(null);
     const scanWsRef = useRef(null);
@@ -143,7 +141,7 @@ function AgentPanel() {
         } catch {
             setHasApiKey(false);
         }
-    } ;
+    };
 
     useEffect(() => {
         let isCurrent = true;
@@ -453,76 +451,72 @@ function AgentPanel() {
     }, [connectWebSocket]);
 
     useEffect(() => {
-    fetchApiKeyStatus();
+        fetchApiKeyStatus();
     }, []);
 
     return (
         <div className="app-panel">
-            <section className="settings-panel" aria-label="Policy Scanner">
-                <div>
-                    <div className="settings-heading-row">
+            <section className="Policy-scanner" aria-label="Policy Scanner">
+                <div className="policy-scanner-heading-row">
+                    <div>
                         <h2 className="panel-heading">Policy Scanner</h2>
-                        <button
-                            type="button"
-                            className="button"
-                            style={helpWindowStyle}
-                            onClick={() => setIsHelpOpen(true)}
-                        >
-                            Help
-                        </button>
-                        <button
-                            type="button"
-                            className="button"
-                            style={apiKeySettingsButtonStyle}
-                            onClick={() => setIsSettingsOpen(true)}
-                        >
-                            API key settings
-                        </button>
+                        <p className="text-block-small">Search for policies either by selecting domains or talking with the agent</p>
                     </div>
-                    <div className="region-selector-scroll">
-                        <RegionSelector
-                            selectedItems={selectedRegions}
-                            onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
+                    <button
+                        type="button"
+                        className="button"
+                        style={apiKeySettingsButtonStyle}
+                        onClick={() => setIsSettingsOpen(true)}
+                    >
+                        API key settings
+                    </button>
+                </div>
+                <div className="domain-scan" aria-label="Domain scan">
+                    <div>
+                        <div className="settings-heading-panel">
+                        <div className="settings-heading-row">
+                            <h2 className="panel-heading">Domain Scan</h2>
+                        </div>
+                        <p className="text-block-small">Scan specific regions for policies.</p>
+                        </div>
+
+                        <div className="region-selector-scroll">
+                            <RegionSelector
+                                selectedItems={selectedRegions}
+                                onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
+                            />
+                        </div>
+                        <ModeSelector
+                            value={mode}
+                            onChange={setMode}
                         />
+                        <output className={`cost-estimate ${costStatus}`} aria-live="polite">
+                            {getCostEstimateText()}
+                        </output>
                     </div>
-                    <ModeSelector
-                        value={mode}
-                        onChange={setMode}
-                    />
-                    <output className={`cost-estimate ${costStatus}`} aria-live="polite">
-                        {getCostEstimateText()}
-                    </output>
+                    <div className="agent-action-row">
+                        <button
+                            type="button"
+                            className="scan-button"
+                            onClick={scanSelectedRegion}
+                            disabled={isBusy || selectedRegions.length === 0 || !hasApiKey}
+                        >
+                            {isQueueRunning
+                                ? `Queued (${queuedScanCount})`
+                                : isScanRequestRunning || isScanRunning ? 'Scan running' : 'Scan'}
+                        </button>
+                        <button
+                            type="button"
+                            className="stop-scan-button"
+                            onClick={stopActiveScan}
+                            disabled={!isScanRunning && !isQueueRunning && !isScanRequestRunning}
+                        >
+                            Stop scan
+                        </button>
+                    </div>
                 </div>
-                <div className="agent-action-row">
-                    <button
-                        type="button"
-                        className="scan-button"
-                        onClick={scanSelectedRegion}
-                        disabled={isBusy || selectedRegions.length === 0 || !hasApiKey}
-                    >
-                        {isQueueRunning
-                            ? `Queued (${queuedScanCount})`
-                            : isScanRequestRunning || isScanRunning ? 'Scan running' : 'Scan'}
-                    </button>
-                    <button
-                        type="button"
-                        className="stop-scan-button"
-                        onClick={stopActiveScan}
-                        disabled={!isScanRunning && !isQueueRunning && !isScanRequestRunning}
-                    >
-                        Stop scan
-                    </button>
-                </div>
-            </section>
-
-            <section className="chat-panel" aria-label="Agent chat">
-
-                <HelpWindow
-                    open={isHelpOpen}
-                    onClose={() => setIsHelpOpen(false)}
-                />
-
-                <ApiKeySettingsModal
+                <div className="Agent-scanner" aria-label="Agent chat">
+                    <ApiKeySettingsModal
                         open={isSettingsOpen}
                         onClose={() => {
                             setIsSettingsOpen(false);
@@ -530,11 +524,12 @@ function AgentPanel() {
                         }}
                     />
 
-                <Chatbot
-                    wsRef={wsRef}
-                    notice={chatNotice}
-                    onRunningChange={setIsChatRunning}
-                />
+                    <Chatbot
+                        wsRef={wsRef}
+                        notice={chatNotice}
+                        onRunningChange={setIsChatRunning}
+                    />
+                </div>
             </section>
         </div>
     );

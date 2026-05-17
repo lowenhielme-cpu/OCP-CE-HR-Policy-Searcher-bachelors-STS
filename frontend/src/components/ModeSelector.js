@@ -44,8 +44,10 @@ function ModeSelector({ value = 'standard', onChange }) {
       sx={{
         width: '100%',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(min(150px, 100%), 1fr))',
-        gap: 2,
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: 1.5,
+        minWidth: '150px',
+        overflow: 'anywhere',
       }}
     >
       {cards.map((card) => {
@@ -56,6 +58,7 @@ function ModeSelector({ value = 'standard', onChange }) {
             key={card.id}
             variant="outlined"
             sx={{
+              minWidth: 0,
               borderColor: isSelected ? '#64748b' : card.border,
               backgroundColor: isSelected ? card.selectedTint : card.tint,
               boxShadow: isSelected ? 'inset 0 0 0 1px #64748b' : 'none',
@@ -79,15 +82,25 @@ function ModeSelector({ value = 'standard', onChange }) {
                 },
               }}
             >
-              <CardContent sx={{ height: '100%' }}>
+              <CardContent sx={{ height: '100%', minWidth: 0, padding: 1.5 }}>
                 <Typography
                   variant="h5"
                   component="div"
-                  sx={{ color: isSelected ? '#0f172a' : '#334155' }}
+                  sx={{
+                    color: isSelected ? '#0f172a' : '#334155',
+                    fontSize: 'clamp(1rem, 1.6vw, 1.5rem)',
+                    overflowWrap: 'anywhere',
+                  }}
                 >
                   {card.title}
                 </Typography>
-                <Typography variant="body2" sx={{ color: isSelected ? '#334155' : '#64748b' }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: isSelected ? '#334155' : '#64748b',
+                    overflowWrap: 'anywhere',
+                  }}
+                >
                   {card.description}
                 </Typography>
               </CardContent>

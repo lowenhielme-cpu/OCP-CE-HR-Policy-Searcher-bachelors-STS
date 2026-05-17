@@ -1,10 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Autocomplete from '@mui/material/Autocomplete';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import SavedPolicy, { formatTagLabel, getPolicyTags } from './SavedPolicy';
 
 function getPolicyKey(policy, index) {
   return `${policy.scan_id}-${policy.domain_id}-${index}`;
+}
+
+function getPolicyDateValue(policy) {
+  const dateValue = policy.discovered_at || policy.created_at || policy.updated_at || '';
+  const timestamp = Date.parse(dateValue);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function compareText(firstValue, secondValue) {
+  return String(firstValue || '').localeCompare(String(secondValue || ''));
 }
 
 function PolicyList() {
@@ -12,6 +26,8 @@ function PolicyList() {
   const [tags, setTags] = useState({});
   const [selectedJurisdictions, setSelectedJurisdictions] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [nameQuery, setNameQuery] = useState('');
+  const [sortBy, setSortBy] = useState('relevance');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -94,9 +110,14 @@ function PolicyList() {
   }, [policies]);
 
   const filteredPolicyEntries = useMemo(() => {
+    const normalizedNameQuery = nameQuery.trim().toLowerCase();
+
     return policies
       .map((policy, index) => ({ policy, policyKey: getPolicyKey(policy, index) }))
       .filter(({ policy, policyKey }) => {
+        const matchesName = normalizedNameQuery
+          ? String(policy.policy_name || '').toLowerCase().includes(normalizedNameQuery)
+          : true;
         const matchesJurisdictions = selectedJurisdictions.length > 0
           ? selectedJurisdictions.includes(policy.jurisdiction)
           : true;
@@ -105,9 +126,38 @@ function PolicyList() {
           ? selectedTags.some((tag) => policyTags.includes(tag))
           : true;
 
-        return matchesJurisdictions && matchesTags;
+        return matchesName && matchesJurisdictions && matchesTags;
+      })
+      .sort((firstEntry, secondEntry) => {
+        const firstPolicy = firstEntry.policy;
+        const secondPolicy = secondEntry.policy;
+
+        if (sortBy === 'name') {
+          return compareText(firstPolicy.policy_name, secondPolicy.policy_name);
+        }
+        if (sortBy === 'jurisdiction') {
+          return compareText(firstPolicy.jurisdiction, secondPolicy.jurisdiction);
+        }
+        if (sortBy === 'relevance') {
+          return (Number(secondPolicy.relevance_score) || 0) - (Number(firstPolicy.relevance_score) || 0);
+        }
+        return getPolicyDateValue(secondPolicy) - getPolicyDateValue(firstPolicy);
       });
-  }, [policies, policyTagsByKey, selectedJurisdictions, selectedTags]);
+  }, [
+    policies,
+    policyTagsByKey,
+    selectedJurisdictions,
+    selectedTags,
+    nameQuery,
+    sortBy,
+  ]);
+
+  const clearFilters = () => {
+    setNameQuery('');
+    setSelectedJurisdictions([]);
+    setSelectedTags([]);
+    setSortBy('relevance');
+  };
 
   if (isLoading) {
     return <div>Loading policies...</div>;
@@ -120,13 +170,25 @@ function PolicyList() {
   return (
     <section className="policy-list">
       <div className="policy-list-header">
-        <div>
-          <h2>Policies</h2>
+        <div className="policy-list-title">
+          <h2>Discovered Policies</h2>
           <p className="policy-list-count">
-            {filteredPolicyEntries.length} of {policies.length} policies shown
+            Showing {filteredPolicyEntries.length} of {policies.length} policies
           </p>
         </div>
         <div className="policy-list-filters">
+          <div className="policy-filter-label">
+            <FilterListIcon fontSize="small" />
+            <span>Filters:</span>
+          </div>
+          <TextField
+            className="policy-list-filter policy-list-search"
+            placeholder="Filter by name..."
+            size="small"
+            value={nameQuery}
+            onChange={(event) => setNameQuery(event.target.value)}
+            sx={{ width: 200 }}
+          />
           <Autocomplete
             multiple
             limitTags={1}
@@ -136,12 +198,11 @@ function PolicyList() {
             value={selectedJurisdictions}
             onChange={(_, value) => setSelectedJurisdictions(value)}
             disabled={jurisdictionOptions.length === 0}
-            sx={{ width: 260 }}
+            sx={{ width: 200 }}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Filter by jurisdictions"
-                placeholder="Jurisdictions"
+                placeholder={selectedJurisdictions.length === 0 ? 'All jurisdictions' : ''}
                 size="small"
               />
             )}
@@ -156,17 +217,38 @@ function PolicyList() {
             onChange={(_, value) => setSelectedTags(value)}
             getOptionLabel={(tag) => formatTagLabel(tag)}
             disabled={tagOptions.length === 0}
-            sx={{ width: 260 }}
+            sx={{ width: 200 }}
             renderInput={(params) => (
-              <TextField {...params} label="Filter by tags" placeholder="Tags" size="small" />
+              <TextField
+                {...params}
+                placeholder={selectedTags.length === 0 ? 'All tags' : ''}
+                size="small"
+              />
             )}
           />
+          <FormControl className="policy-list-filter policy-list-sort" size="small" sx={{ width: 250 }}>
+            <Select
+              id="policy-sort"
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+            >
+              <MenuItem value="relevance">Sorting by: Relevance (High)</MenuItem>
+              <MenuItem value="name">Sorting by: Name (A-Z)</MenuItem>
+              <MenuItem value="jurisdiction">Sorting by: Jurisdiction (A-Z)</MenuItem>
+              <MenuItem value="date">Sorting by: Date added (Newest)</MenuItem>
+            </Select>
+          </FormControl>
+          <button type="button" className="policy-clear-button" onClick={clearFilters}>
+            Clear
+          </button>
         </div>
       </div>
       {policies.length === 0 ? (
         <p>No policies found.</p>
       ) : filteredPolicyEntries.length === 0 ? (
-        <p>No policies match the selected tag.</p>
+        <p className="text-block">
+          No policies match the selected filters in our current database. Use the agent to find policies within your requirements.
+        </p>
       ) : (
         <div className="policy-list-items">
           {filteredPolicyEntries.map(({ policy, policyKey }) => (

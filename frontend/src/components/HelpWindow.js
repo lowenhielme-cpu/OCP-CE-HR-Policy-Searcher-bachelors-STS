@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+import React from 'react';
 
 export const helpWindowStyle = {
   minHeight: 40,
@@ -19,7 +17,7 @@ const styles = {
     background: 'rgba(15, 23, 42, 0.45)',
   },
   modal: {
-    width: 'min(100%, 460px)',
+    width: 'min(100%, 560px)',
     boxSizing: 'border-box',
     padding: 20,
     borderRadius: 8,
@@ -52,6 +50,51 @@ const styles = {
     display: 'grid',
     gap: 12,
     marginTop: 18,
+  },
+  intro: {
+    margin: '14px 0 0',
+    color: '#334155',
+    fontSize: 15,
+    lineHeight: 1.55,
+  },
+  steps: {
+    display: 'grid',
+    gap: 10,
+    margin: '18px 0 0',
+    padding: 0,
+    listStyle: 'none',
+  },
+  step: {
+    display: 'grid',
+    gridTemplateColumns: '32px 1fr',
+    gap: 12,
+    padding: 12,
+    border: '1px solid #d7dee8',
+    borderRadius: 8,
+    background: '#f8fafc',
+  },
+  stepNumber: {
+    display: 'inline-grid',
+    placeItems: 'center',
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    background: '#bccdf4',
+    color: '#0f172a',
+    fontWeight: 800,
+    fontSize: 14,
+  },
+  stepTitle: {
+    margin: 0,
+    color: '#0f172a',
+    fontSize: 15,
+    fontWeight: 800,
+  },
+  stepText: {
+    margin: '4px 0 0',
+    color: '#475569',
+    fontSize: 14,
+    lineHeight: 1.45,
   },
   label: {
     display: 'block',
@@ -88,40 +131,84 @@ const styles = {
     background: '#e2e8f0',
     color: '#111827',
   },
+  primaryButton: {
+    background: '#2563eb',
+    color: '#ffffff',
+  },
+  footer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginTop: 18,
+  },
   disabledButton: {
     background: '#999',
     cursor: 'not-allowed',
   },
 };
 
-function HelpWindow({ open, onClose }) {
-  const [status, setStatus] = useState(null);
-  const [message, setMessage] = useState('');
-
-
-  useEffect(() => {
-    if (!open) return;
-
-    setMessage('');
-  }, [open]);
-
+function HelpWindow({ open, onClose, title = 'Welcome to Policy Pulse' }) {
   if (!open) return null;
 
   return (
     <div style={styles.backdrop} role="presentation">
       <div style={styles.modal} role="dialog" aria-modal="true" aria-labelledby="help-title">
         <div style={styles.header}>
-          <h2 id="help-title" style={styles.title}>Help window</h2>
+          <h2 id="help-title" style={styles.title}>{title}</h2>
           
           <button type="button" style={styles.closeButton} onClick={onClose} aria-label="Close help window">
             x
           </button>
         </div>
-        <div style={styles.label}>Welcome to the PolicyPulse!</div>
-        <div style={styles.freetext}>
-              This is an AI based tool that helps you to find policies and regulations regarding the heat usage of datacenters.<br></br><br></br>
-              You can either use the predefined search modes of the Policy Scanner, or ask the AI directly by typing your question in the chat.<br></br><br></br>
-              Please note that you need an active Anthropic API key for the tool to work.   
+        <p style={styles.intro}>
+          Policy Pulse helps you find and review policies about data center heat reuse.
+          Start with the scanner for structured searches, or ask the AI agent directly in the chat.
+        </p>
+        <ol style={styles.steps}>
+          <li style={styles.step}>
+            <span style={styles.stepNumber}>1</span>
+            <div>
+              <p style={styles.stepTitle}>Add your API key</p>
+              <p style={styles.stepText}>
+                Open API key settings and save an active Anthropic API key before running scans or using the agent.
+              </p>
+            </div>
+          </li>
+          <li style={styles.step}>
+            <span style={styles.stepNumber}>2</span>
+            <div>
+              <p style={styles.stepTitle}>Choose scan targets</p>
+              <p style={styles.stepText}>
+                Select countries, regions, groups, categories, or tags in the Policy Scanner.
+              </p>
+            </div>
+          </li>
+          <li style={styles.step}>
+            <span style={styles.stepNumber}>3</span>
+            <div>
+              <p style={styles.stepTitle}>Pick a scan mode</p>
+              <p style={styles.stepText}>
+                Use Standard for configured sources, Discover for finding new coverage, or Deep for broader crawling.
+              </p>
+            </div>
+          </li>
+          <li style={styles.step}>
+            <span style={styles.stepNumber}>4</span>
+            <div>
+              <p style={styles.stepTitle}>Review results</p>
+              <p style={styles.stepText}>
+                Found policies appear in the policy list, where you can search, filter, sort, and expand each result.
+              </p>
+            </div>
+          </li>
+        </ol>
+        <div style={styles.footer}>
+          <button
+            type="button"
+            style={{ ...styles.buttonBase, ...styles.primaryButton }}
+            onClick={onClose}
+          >
+            Get started
+          </button>
         </div>
       </div>
     </div>

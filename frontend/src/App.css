@@ -25,6 +25,30 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.app-help-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #1f2937;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.app-help-button:hover {
+  background-color: #f4f7fb;
+}
+
+.app-help-button svg {
+  flex: 0 0 auto;
+}
+
 .component-test-link {
   display: inline-flex;
   align-items: center;
@@ -88,39 +112,51 @@
   background-color: #f8fafc;
 }
 
-.component-test-value {
-  margin: 0;
-  color: #334155;
-  font-size: 16px;
-}
-
 .app-panel {
   width: min(80%, 1600px);
   margin: 20px auto;
   text-align: left;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  gap: 24px;
-  align-items: stretch;
   background-color: #fdfdfd;
   padding: 1em;
   border-radius: 8px;
 }
 
-.settings-panel,
-.chat-panel {
+.Policy-scanner {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.policy-scanner-heading-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.policy-scanner-heading-row .text-block-small {
+  margin-top: 4px;
+}
+
+.domain-scan,
+.Agent-scanner {
   min-width: 0;
 }
 
-.chat-panel {
+.Agent-scanner {
   display: flex;
   min-height: 520px;
 }
 
-.settings-panel {
+.domain-scan {
   display: flex;
   min-height: 520px;
   flex-direction: column;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  padding: 0.8em;
 }
 
 .panel-heading {
@@ -135,21 +171,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
-
-.toolbar-row {
-  display: flex;
-  gap: 10px;
+.settings-heading-panel {
   margin-bottom: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.region-field {
-  min-width: 150px;
-  background-color: white;
-  border-radius: 6px;
 }
 
 .region-selector-scroll {
@@ -159,38 +184,6 @@
   overflow-y: auto;
   padding-right: 6px;
   margin-bottom: 1em;
-}
-
-.mode-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.mode-label {
-  font-size: 16px;
-}
-
-.mode-options {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.mode-button {
-  padding: 10px 18px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: white;
-  color: #111;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.mode-button.selected {
-  border-color: #61dafb;
-  background-color: #dff7ff;
 }
 
 .scan-button {
@@ -288,40 +281,16 @@
   resize: vertical;
 }
 
-.message-panel {
-  margin-top: 20px;
-  min-height: 140px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: #fafafa;
-  color: #333;
-  overflow-y: auto;
+.text-block {
+  margin: 0;
+  color: #7e8084;
+  font-size: 22px;
+}
+.text-block-small {
+  margin: 0;
+  color: #7e8084;
   font-size: 14px;
 }
-
-.message-item {
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 5px;
-}
-
-.message-item.user {
-  background-color: #e3f2fd;
-}
-
-.message-item.agent {
-  background-color: #f3e5f5;
-}
-
-.message-item.error {
-  background-color: #ffebee;
-}
-
-.message-item.system {
-  background-color: #e0e0e0;
-}
-
 .logo-image {
   width: 200px;
   margin-top: 20px;
@@ -329,6 +298,14 @@
 
 @media (max-width: 900px) {
   .app-panel {
+    width: min(100%, 1600px);
+  }
+
+  .component-test-stage {
+    width: min(100%, 1600px);
+  }
+
+  .Policy-scanner {
     grid-template-columns: 1fr;
 
   }

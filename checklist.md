@@ -29,9 +29,9 @@
 - [] Remove found policies
 - [] Review found policies
 - [x] Policies filterable
-- [] Policies sortable
-- [] Policies searchable
-- [] Multiple filters at the same time
+- [x] Policies sortable
+- [x] Policies searchable
+- [x] Multiple filters at the same time
 
 ## Other
 - [] File for labels?
