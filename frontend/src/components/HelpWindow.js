@@ -2,9 +2,14 @@ import React from 'react';
 
 export const helpWindowStyle = {
   minHeight: 40,
-  backgroundColor: '#bccdf4',
-  color: '#000000',
+  backgroundColor: '#8dc63f',
+  color: '#ffffff',
 };
+
+const OCP_GREEN = '#8dc63f';
+const OCP_GREEN_DARK = '#6fa52f';
+const OCP_GREEN_SOFT = '#eef7e4';
+const OCP_GREEN_BORDER = '#c8e5a3';
 
 const styles = {
   backdrop: {
@@ -14,16 +19,18 @@ const styles = {
     display: 'grid',
     placeItems: 'center',
     padding: 16,
-    background: 'rgba(15, 23, 42, 0.45)',
+    background: 'rgba(31, 41, 55, 0.46)',
   },
   modal: {
     width: 'min(100%, 560px)',
     boxSizing: 'border-box',
     padding: 20,
     borderRadius: 8,
+    borderTop: `4px solid ${OCP_GREEN}`,
     background: '#ffffff',
     color: '#111827',
     boxShadow: '0 18px 60px rgba(15, 23, 42, 0.25)',
+    fontFamily: '"Open Sans", "Helvetica Neue", Arial, sans-serif',
   },
   header: {
     display: 'flex',
@@ -34,16 +41,19 @@ const styles = {
   title: {
     margin: 0,
     fontSize: 20,
+    fontWeight: 700,
+    color: '#1f2937',
   },
   closeButton: {
     width: 32,
     height: 32,
-    border: '1px solid #cbd5e1',
-    borderRadius: 6,
+    border: 'none',
+    borderRadius: 999,
     background: '#ffffff',
-    color: '#111827',
+    color: '#334155',
     cursor: 'pointer',
     fontSize: 18,
+    fontWeight: 700,
     lineHeight: 1,
   },
   body: {
@@ -69,9 +79,9 @@ const styles = {
     gridTemplateColumns: '32px 1fr',
     gap: 12,
     padding: 12,
-    border: '1px solid #d7dee8',
+    border: `1px solid ${OCP_GREEN_BORDER}`,
     borderRadius: 8,
-    background: '#f8fafc',
+    background: OCP_GREEN_SOFT,
   },
   stepNumber: {
     display: 'inline-grid',
@@ -79,8 +89,8 @@ const styles = {
     width: 28,
     height: 28,
     borderRadius: 999,
-    background: '#bccdf4',
-    color: '#0f172a',
+    background: OCP_GREEN,
+    color: '#ffffff',
     fontWeight: 800,
     fontSize: 14,
   },
@@ -116,7 +126,7 @@ const styles = {
     borderRadius: 6,
     background: '#f8fafc',
     color: '#111827',
-    fontFamily: 'monospace',
+    fontFamily: 'inherit',
   },
   buttonBase: {
     minHeight: 40,
@@ -132,8 +142,11 @@ const styles = {
     color: '#111827',
   },
   primaryButton: {
-    background: '#2563eb',
+    background: OCP_GREEN,
     color: '#ffffff',
+  },
+  primaryButtonHover: {
+    background: OCP_GREEN_DARK,
   },
   footer: {
     display: 'flex',
@@ -147,6 +160,8 @@ const styles = {
 };
 
 function HelpWindow({ open, onClose, title = 'Welcome to Policy Pulse' }) {
+  const [isPrimaryHovered, setIsPrimaryHovered] = React.useState(false);
+
   if (!open) return null;
 
   return (
@@ -204,8 +219,14 @@ function HelpWindow({ open, onClose, title = 'Welcome to Policy Pulse' }) {
         <div style={styles.footer}>
           <button
             type="button"
-            style={{ ...styles.buttonBase, ...styles.primaryButton }}
+            style={{
+              ...styles.buttonBase,
+              ...styles.primaryButton,
+              ...(isPrimaryHovered ? styles.primaryButtonHover : {}),
+            }}
             onClick={onClose}
+            onMouseEnter={() => setIsPrimaryHovered(true)}
+            onMouseLeave={() => setIsPrimaryHovered(false)}
           >
             Get started
           </button>

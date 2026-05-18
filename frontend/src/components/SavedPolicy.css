@@ -395,7 +395,7 @@
 }
 
 .monospace {
-    font-family: 'Courier New', monospace;
+    font-family: inherit;
     background-color: #f3f5f7;
     padding: 2px 4px;
     border-radius: 2px;

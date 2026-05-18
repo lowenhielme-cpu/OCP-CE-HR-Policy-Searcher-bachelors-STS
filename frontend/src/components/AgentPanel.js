@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import ApiKeySettingsModal, { apiKeySettingsButtonStyle } from './ApiKeySettingsModal';
+import ApiKeySettingsModal from './ApiKeySettingsModal';
 import Chatbot from './Chatbot';
 import ModeSelector from './ModeSelector';
 import RegionSelector from './RegionSelector';
@@ -465,7 +465,6 @@ function AgentPanel() {
                     <button
                         type="button"
                         className="button"
-                        style={apiKeySettingsButtonStyle}
                         onClick={() => setIsSettingsOpen(true)}
                     >
                         API key settings
@@ -497,7 +496,7 @@ function AgentPanel() {
                     <div className="agent-action-row">
                         <button
                             type="button"
-                            className="scan-button"
+                            className="scan-button, button"
                             onClick={scanSelectedRegion}
                             disabled={isBusy || selectedRegions.length === 0 || !hasApiKey}
                         >
@@ -507,7 +506,7 @@ function AgentPanel() {
                         </button>
                         <button
                             type="button"
-                            className="stop-scan-button"
+                            className="stop-scan-button, button"
                             onClick={stopActiveScan}
                             disabled={!isScanRunning && !isQueueRunning && !isScanRequestRunning}
                         >

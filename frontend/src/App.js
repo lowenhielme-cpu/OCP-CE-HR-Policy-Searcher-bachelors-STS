@@ -12,18 +12,20 @@ function ComponentTestingView() {
   return (
     <div className="App">
       <header className="App-header">
-        <div className="component-test-view">
-          <div className="component-test-header">
+        <div className="app-header-inner">
+          <div className="app-brand">
+            <img src={TempLogoImage} alt="OCP Policy Pulse" className="logo-image" />
             <div>
-              <p className="component-test-kicker">Component testing</p>
-              <h1>Policies</h1>
+              <p className="app-brand-kicker">Open Compute Project</p>
+              <h1>Policy Pulse</h1>
             </div>
+          </div>
+          <nav className="app-header-nav" aria-label="Application navigation">
             <a className="component-test-link" href="/">
               Back to app
             </a>
-          </div>
+          </nav>
         </div>
-
       </header>
       <div className="App-main">
         <section className="component-test-stage" aria-label="Policy list test stage">
@@ -72,27 +74,33 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>OCP Policy Pulse</h1>
-        <img src={TempLogoImage} alt="Temp Logo" className="logo-image" />
-        <button
-          type="button"
-          className="app-help-button"
-          onClick={() => setIsHelpOpen(true)}
-          aria-label="Open help tutorial"
-          title="Help"
-        >
-          <HelpOutlinedIcon fontSize="small" />
-          <span>Help</span>
-        </button>
+        <div className="app-header-inner">
+          <div className="app-brand">
+            <img src={TempLogoImage} alt="OCP Policy Pulse" className="logo-image" />
+            <div>
+              <p className="app-brand-kicker">Open Compute Project</p>
+              <h1>Policy Pulse</h1>
+            </div>
+          </div>
+          <nav className="app-header-nav" aria-label="Application navigation">
+            <button
+              type="button"
+              className="app-help-button"
+              onClick={() => setIsHelpOpen(true)}
+              aria-label="Open help tutorial"
+              title="Help"
+            >
+              <HelpOutlinedIcon fontSize="small" />
+              <span>Help</span>
+            </button>
+          </nav>
+        </div>
       </header>
       <HelpWindow
         open={isFirstRunHelpOpen || isHelpOpen}
         onClose={isFirstRunHelpOpen ? closeWelcomeTutorial : () => setIsHelpOpen(false)}
       />
       <main className="App-main">
-        <a className="component-test-link app-dev-link" href="/?view=components">
-          Components
-        </a>
         <AgentPanel />
         <section className="component-test-stage" aria-label="Policy list test stage">
           <PolicyList />

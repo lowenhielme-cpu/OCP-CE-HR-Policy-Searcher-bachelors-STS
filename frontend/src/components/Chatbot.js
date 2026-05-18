@@ -21,6 +21,10 @@ import {
 import { ChatProvider, useChat, useChatStore, useMessageIds } from '@mui/x-chat/headless';
 
 const CONVERSATION_ID = 'cli-agent-conv';
+const CHAT_GREEN = '#8dc63f';
+const CHAT_GREEN_DARK = '#6fa52f';
+const CHAT_GREEN_SOFT = '#eef7e4';
+const CHAT_GREEN_BORDER = '#c8e5a3';
 
 const chatUsers = {
   agent: {
@@ -110,8 +114,8 @@ const ReasoningBlock = styled(Paper)(({ theme }) => ({
 }));
 
 const ToolBlock = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.blue[50],
-  border: `1px solid ${theme.palette.blue[200]}`,
+  backgroundColor: CHAT_GREEN_SOFT,
+  border: `1px solid ${CHAT_GREEN_BORDER}`,
   borderRadius: theme.shape.borderRadius,
   padding: theme.spacing(1.5),
   margin: theme.spacing(1, 0),
@@ -161,8 +165,8 @@ const messageSx = {
     padding: '10px 14px',
     borderRadius: '16px',
     borderTopRightRadius: 4,
-    backgroundColor: 'primary.main',
-    color: 'primary.contrastText',
+    backgroundColor: CHAT_GREEN,
+    color: '#ffffff',
     lineHeight: 1.45,
     whiteSpace: 'pre-wrap',
   },
@@ -489,13 +493,48 @@ const ChatbotInner = React.forwardRef(function ChatbotInner(
   return (
     <ChatConversation>
       <ChatMessageList renderItem={renderItem} items={messageIds} />
-      <ChatComposer disabled={inputDisabled}>
+      <ChatComposer
+        disabled={inputDisabled}
+        sx={{
+          '&:focus-within:not([data-disabled])': {
+            borderColor: CHAT_GREEN,
+            boxShadow: `0 0 0 1px ${CHAT_GREEN}`,
+          },
+        }}
+      >
         <ChatComposerTextArea
           placeholder="Type your command here..."
           disabled={inputDisabled}
+          sx={{
+            caretColor: CHAT_GREEN,
+            '&::selection': {
+              backgroundColor: CHAT_GREEN_BORDER,
+            },
+            '&::-moz-selection': {
+              backgroundColor: CHAT_GREEN_BORDER,
+            },
+          }}
         />
         <ChatComposerToolbar>
-          <ChatComposerSendButton aria-label="Send message" disabled={inputDisabled}>
+          <ChatComposerSendButton
+            aria-label="Send message"
+            disabled={inputDisabled}
+            sx={{
+              backgroundColor: CHAT_GREEN,
+              color: '#ffffff',
+              '&:hover': {
+                backgroundColor: CHAT_GREEN_DARK,
+              },
+              '&:focus-visible': {
+                outline: `2px solid ${CHAT_GREEN}`,
+                outlineOffset: 2,
+              },
+              '&:disabled': {
+                backgroundColor: '#999',
+                color: '#ffffff',
+              },
+            }}
+          >
             <SendIcon />
           </ChatComposerSendButton>
         </ChatComposerToolbar>
@@ -542,6 +581,27 @@ const Chatbot = React.forwardRef(function Chatbot(
             flex: 1,
             minHeight: 0,
             overflowY: 'auto',
+          },
+          '& .MuiChatComposer-root:focus-within:not([data-disabled])': {
+            borderColor: CHAT_GREEN,
+            boxShadow: `0 0 0 1px ${CHAT_GREEN}`,
+          },
+          '& .MuiChatComposer-textArea': {
+            caretColor: CHAT_GREEN,
+          },
+          '& .MuiChatComposer-textArea::selection': {
+            backgroundColor: CHAT_GREEN_BORDER,
+          },
+          '& .MuiChatComposer-sendButton': {
+            backgroundColor: CHAT_GREEN,
+            color: '#ffffff',
+          },
+          '& .MuiChatComposer-sendButton:hover': {
+            backgroundColor: CHAT_GREEN_DARK,
+          },
+          '& .MuiChatComposer-sendButton:focus-visible': {
+            outline: `2px solid ${CHAT_GREEN}`,
+            outlineOffset: 2,
           },
           '*, *::before, *::after': { boxSizing: 'inherit' },
         }}

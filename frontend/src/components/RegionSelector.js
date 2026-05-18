@@ -6,6 +6,9 @@ import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+const SELECTION_GREEN = '#8dc63f';
+const SELECTION_GREEN_SOFT = '#f6fbf0';
+const SELECTION_GREEN_HOVER = '#eff5e8';
 
 const TOP_LEVEL_IDS = new Set([
   'section:categories',
@@ -109,6 +112,25 @@ const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
     padding: theme.spacing(0.5, 1),
     margin: theme.spacing(0.2, 0),
     borderRadius: theme.shape.borderRadius,
+    '&:hover': {
+      backgroundColor: SELECTION_GREEN_SOFT,
+    },
+    [`&&.${treeItemClasses.selected}, &&.Mui-selected`]: {
+      backgroundColor: SELECTION_GREEN_SOFT,
+      color: theme.palette.text.primary,
+      '&:hover': {
+        backgroundColor: SELECTION_GREEN_HOVER,
+      },
+    },
+    [`&&.${treeItemClasses.selected}.${treeItemClasses.focused}, &&.Mui-selected.Mui-focused`]: {
+      backgroundColor: SELECTION_GREEN_SOFT,
+    },
+    [`&&.${treeItemClasses.focused}, &&.Mui-focused`]: {
+      backgroundColor: SELECTION_GREEN_SOFT,
+    },
+  },
+  '& .MuiCheckbox-root.Mui-checked, & .MuiCheckbox-root.MuiCheckbox-indeterminate': {
+    color: SELECTION_GREEN,
   },
   [`& .${treeItemClasses.groupTransition}`]: {
     marginLeft: 15,
