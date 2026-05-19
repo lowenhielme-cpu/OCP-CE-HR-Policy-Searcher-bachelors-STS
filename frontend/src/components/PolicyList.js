@@ -33,26 +33,8 @@ function PolicyList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    /*
-    const loadMockPolicies = async () => {
-      try {
-        const response = await fetch('/mock-policies.json');
-
-        if (!response.ok) {
-          throw new Error(`Failed to load policies (${response.status})`);
-        }
-
-        const data = await response.json();
-        setPolicies(Array.isArray(data.policies) ? data.policies : []);
-      } catch (loadError) {
-        setError(loadError.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    */
-
     const loadSavedPolicies = async () => {
+      setError(null);
       try {
         const [policiesResponse, tagsResponse] = await Promise.all([
           fetch(apiUrl('/api/policies')),
@@ -80,6 +62,11 @@ function PolicyList() {
     };
 
     loadSavedPolicies();
+    window.addEventListener('policy-data-changed', loadSavedPolicies);
+
+    return () => {
+      window.removeEventListener('policy-data-changed', loadSavedPolicies);
+    };
   }, []);
 
   const policyTagsByKey = useMemo(() => {

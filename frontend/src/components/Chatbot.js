@@ -382,6 +382,7 @@ function createWebSocketResponseStream({ ws, text, signal, onRunningChange }) {
           case 'tool_result':
             break;
           case 'complete':
+            window.dispatchEvent(new Event('policy-data-changed'));
             if (payload.response && !lastMessageId) {
               enqueueMessage(payload.response, { terminal: true });
               settled = true;
@@ -497,7 +498,12 @@ function createCliAgentAdapter({ wsRef, onRunningChange }) {
         });
       }
 
-      return createWebSocketResponseStream({ ws, text, signal, onRunningChange });
+      return createWebSocketResponseStream({
+        ws,
+        text,
+        signal,
+        onRunningChange,
+      });
     },
   };
 }

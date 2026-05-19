@@ -279,6 +279,9 @@ function AgentPanel() {
             }
 
             if (payload.type === 'scan_complete' || payload.type === 'error') {
+                if (payload.type === 'scan_complete') {
+                    window.dispatchEvent(new Event('policy-data-changed'));
+                }
                 finish(payload.type === 'scan_complete');
                 setActiveScanId(null);
                 scanWs.close();
@@ -334,6 +337,7 @@ function AgentPanel() {
                     'system',
                     scan.response || `Discovery for "${request.domains}" completed.`,
                 );
+                window.dispatchEvent(new Event('policy-data-changed'));
                 return !scanQueueCancelledRef.current;
             }
 
@@ -431,6 +435,7 @@ function AgentPanel() {
             scanWsRef.current?.close();
             scanWsRef.current = null;
             setActiveScanId(null);
+            window.dispatchEvent(new Event('policy-data-changed'));
             pushNotice('system', `Stopped scan ${scanId}.`);
         } catch (error) {
             pushNotice('error', `Could not stop scan: ${error.message}`);
