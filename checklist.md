@@ -17,6 +17,7 @@
 - [x] Separated handling of message types
 - [x] Transparency of AI thinking
 - [x] Stop button
+- [] Chat window size locked and scrolleable
 
 ## Region selector / premade prompting
 - [x] List for regions
