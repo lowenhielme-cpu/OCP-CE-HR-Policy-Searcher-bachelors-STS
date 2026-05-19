@@ -53,7 +53,17 @@ const initialConversations = [
   },
 ];
 
-const initialMessages = [];
+const initialMessages = [
+  {
+    id: 'welcome-message',
+    conversationId: CONVERSATION_ID,
+    role: 'assistant',
+    author: chatUsers.agent,
+    createdAt: new Date().toISOString(),
+    parts: [{ type: 'welcome', state: 'done' }],
+    status: 'sent',
+  },
+];
 
 function SendIcon() {
   return (
@@ -130,6 +140,74 @@ function ReasoningPart({ part }) {
         Reasoning: {part.text}
       </Typography>
     </ReasoningBlock>
+  );
+}
+
+function WelcomePart() {
+  return (
+    <Box
+      sx={{
+        borderLeft: `4px solid ${CHAT_GREEN}`,
+        paddingLeft: 1.5,
+        fontSize: '1rem',
+        lineHeight: 1.65,
+        color: '#111827',
+        '& p': {
+          margin: '0 0 16px',
+        },
+        '& p:last-child': {
+          marginBottom: 0,
+        },
+        '& strong': {
+          fontWeight: 800,
+        },
+        '& ul': {
+          margin: '10px 0 18px 34px',
+          padding: 0,
+        },
+        '& li': {
+          marginBottom: '8px',
+          paddingLeft: '6px',
+          fontStyle: 'italic',
+        },
+      }}
+    >
+      <p>
+        Hello! Welcome to the <strong>OCP CE HR Policy Searcher</strong> - your tool for discovering
+        government policies on <strong>data center waste heat reuse</strong> around the world. For
+        Searching you can either ask questions here in the chat or use the Domain search to the left
+        of the chat for a more consistent and quicker but less specific search.
+      </p>
+
+      <p>Here's what the chat can help you with:</p>
+
+      <p>
+        <strong>Scan Government Websites</strong> - Crawl known government sites to discover new policies
+        automatically
+      </p>
+      <p>
+        <strong>Expand Coverage</strong> - Discover and add new government websites for countries not yet
+        in the database
+      </p>
+      <p>
+        <strong>Analyze Results</strong> - Get AI-generated insights and summaries from scan results
+      </p>
+
+      <p>
+        <strong>Some things you can ask me:</strong>
+      </p>
+      <ul>
+        <li>"Find waste heat reuse policies in Germany"</li>
+        <li>"Scan EU institutions for data center heat regulations"</li>
+        <li>"Discover government websites about waste heat in Japan"</li>
+        <li>"What's the cost to scan all US states?"</li>
+      </ul>
+
+      <p>
+        <strong>Where would you like to start?</strong> You can name a country, region, or topic - and
+        I'll take it from there!
+      </p>
+    </Box>
   );
 }
 
@@ -474,16 +552,7 @@ const ChatbotInner = React.forwardRef(function ChatbotInner(
     (params) => (
       <ChatMessageGroup key={params.id} messageId={params.id}>
         <ChatMessage messageId={params.id} sx={messageSx}>
-          <ChatMessageContent partrenderers={{
-            reasoning: ({ part }) => <ReasoningPart part={part} />,
-            'dynamic-tool': ({ part }) => (
-              <ToolPart
-                part={part}
-                onApprove={() => {}} // No-op since backend doesn't support approvals
-                onDeny={() => {}}
-              />
-            ),
-          }} />
+          <ChatMessageContent />
         </ChatMessage>
       </ChatMessageGroup>
     ),
@@ -551,10 +620,25 @@ const Chatbot = React.forwardRef(function Chatbot(
     () => createCliAgentAdapter({ wsRef, onRunningChange }),
     [wsRef, onRunningChange],
   );
+  const partRenderers = React.useMemo(
+    () => ({
+      welcome: () => <WelcomePart />,
+      reasoning: ({ part }) => <ReasoningPart part={part} />,
+      'dynamic-tool': ({ part }) => (
+        <ToolPart
+          part={part}
+          onApprove={() => {}}
+          onDeny={() => {}}
+        />
+      ),
+    }),
+    [],
+  );
 
   return (
     <ChatProvider
       adapter={adapter}
+      partRenderers={partRenderers}
       initialActiveConversationId={CONVERSATION_ID}
       initialConversations={initialConversations}
       initialMessages={initialMessages}
