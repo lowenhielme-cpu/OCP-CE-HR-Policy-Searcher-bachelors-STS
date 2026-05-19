@@ -33,8 +33,8 @@ function PolicyList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    
     const loadSavedPolicies = async () => {
+      setError(null);
       try {
         const [policiesResponse, tagsResponse] = await Promise.all([
           fetch(apiUrl('/api/policies')),
@@ -62,6 +62,11 @@ function PolicyList() {
     };
 
     loadSavedPolicies();
+    window.addEventListener('policy-data-changed', loadSavedPolicies);
+
+    return () => {
+      window.removeEventListener('policy-data-changed', loadSavedPolicies);
+    };
   }, []);
 
   const policyTagsByKey = useMemo(() => {
