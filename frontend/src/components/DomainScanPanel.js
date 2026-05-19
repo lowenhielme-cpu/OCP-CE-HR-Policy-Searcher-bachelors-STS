@@ -55,7 +55,7 @@ function DomainScanPanel({
                 </button>
                 <button
                     type="button"
-                    className="stop-scan-button"
+                    className="stop-scan-button button"
                     onClick={onStop}
                     disabled={!isScanRunning && !isQueueRunning && !isScanRequestRunning}
                 >

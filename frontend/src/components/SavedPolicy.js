@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import './SavedPolicy.css';
 
 const TAG_GROUPS = {
@@ -106,6 +106,7 @@ export function getPolicyTags(policy, tags) {
 
 function SavedPolicy({ policy, tags = {} }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const detailsId = useId();
 
     if (!policy) {
         return <div className="saved-policy-empty">No policy data available</div>;
@@ -145,10 +146,16 @@ function SavedPolicy({ policy, tags = {} }) {
 
     return (
         <div className="saved-policy-card">
-            <div className="saved-policy-header" onClick={() => setIsExpanded(!isExpanded)}>
-                <div className="saved-policy-title-section">
-                    <h3 className="saved-policy-name">{policy.policy_name}</h3>
-                    <div className="saved-policy-meta">
+            <button
+                type="button"
+                className="saved-policy-header"
+                aria-expanded={isExpanded}
+                aria-controls={detailsId}
+                onClick={() => setIsExpanded((current) => !current)}
+            >
+                <span className="saved-policy-title-section">
+                    <span className="saved-policy-name">{policy.policy_name}</span>
+                    <span className="saved-policy-meta">
                         <span className="saved-policy-jurisdiction">{policy.jurisdiction}</span>
                         <span className={`saved-policy-badge ${getPolicyTypeBadge(policy.policy_type)}`}>
                             {policy.policy_type}
@@ -156,9 +163,9 @@ function SavedPolicy({ policy, tags = {} }) {
                         <span className={`saved-policy-badge ${getReviewStatusBadge(policy.review_status)}`}>
                             {policy.review_status}
                         </span>
-                    </div>
+                    </span>
                     {policyTags.length > 0 && (
-                        <div className="saved-policy-tags" aria-label="Policy tags">
+                        <span className="saved-policy-tags" aria-label="Policy tags">
                             {policyTags.map((tag) => (
                                 <span
                                     key={tag}
@@ -169,24 +176,24 @@ function SavedPolicy({ policy, tags = {} }) {
                                     {formatTagLabel(tag)}
                                 </span>
                             ))}
-                        </div>
+                        </span>
                     )}
-                </div>
-                <div className="saved-policy-score">
-                    <div className="relevance-score">{policy.relevance_score}</div>
+                </span>
+                <span className="saved-policy-score">
+                    <span className="relevance-score">{policy.relevance_score}</span>
                     <span className="score-label">relevance</span>
-                </div>
-                <button className="expand-button" aria-label="Toggle details">
-                    {isExpanded ? '−' : '+'}
-                </button>
-            </div>
+                </span>
+                <span className="expand-button" aria-hidden="true">
+                    {isExpanded ? '-' : '+'}
+                </span>
+            </button>
 
             <div className="saved-policy-summary">
                 <p>{policy.summary}</p>
             </div>
 
             {isExpanded && (
-                <div className="saved-policy-details">
+                <div className="saved-policy-details" id={detailsId}>
                     <div className="detail-section" id="key-info">
                         <h4>Key Information</h4>
                         <dl className="detail-list">

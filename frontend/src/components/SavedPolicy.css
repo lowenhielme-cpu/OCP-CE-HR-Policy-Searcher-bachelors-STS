@@ -127,15 +127,25 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    width: 100%;
     padding: 16px;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
     background-color: #fafafa;
+    border: 0;
     border-bottom: 1px solid #e8ecf1;
     transition: background-color 0.2s ease;
 }
 
-.saved-policy-header:hover {
+.saved-policy-header:hover,
+.saved-policy-header:focus-visible {
     background-color: #f3f5f7;
+}
+
+.saved-policy-header:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
 }
 
 .saved-policy-title-section {
@@ -144,6 +154,7 @@
 }
 
 .saved-policy-name {
+    display: block;
     margin: 0 0 8px 0;
     font-size: 16px;
     font-weight: 600;

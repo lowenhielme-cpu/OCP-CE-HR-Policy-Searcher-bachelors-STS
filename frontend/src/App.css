@@ -123,30 +123,7 @@ select,
   color: currentColor;
 }
 
-.component-test-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 4px;
-  border: none;
-  border-radius: 0;
-  background-color: transparent;
-  color: #334155;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 2px solid transparent;
-}
-
-.component-test-link:hover {
-  background-color: transparent;
-  border-bottom-color: #8dc63f;
-  color: #8dc63f;
-}
-
-.component-test-stage {
+.policy-list-stage {
   width: min(80%, 1600px);
   box-sizing: border-box;
   display: flex;
@@ -357,7 +334,7 @@ select,
     width: min(100%, 1600px);
   }
 
-  .component-test-stage {
+  .policy-list-stage {
     width: min(100%, 1600px);
   }
 
@@ -366,7 +343,7 @@ select,
 
   }
 
-  .component-test-stage {
+  .policy-list-stage {
     align-items: flex-start;
     flex-direction: column;
   }
