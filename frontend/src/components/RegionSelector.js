@@ -4,8 +4,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
+import { apiUrl } from '../config/api';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 const SELECTION_GREEN = '#8dc63f';
 const SELECTION_GREEN_SOFT = '#f6fbf0';
 const SELECTION_GREEN_HOVER = '#eff5e8';
@@ -86,7 +86,7 @@ function buildTreeData({ groups, groupDomains, regions }) {
 }
 
 async function fetchJson(path, signal) {
-  const response = await fetch(`${API_BASE_URL}${path}`, { signal });
+  const response = await fetch(apiUrl(path), { signal });
   if (!response.ok) {
     throw new Error(`Failed to fetch ${path}: ${response.status}`);
   }

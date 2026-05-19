@@ -1,11 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import ApiKeySettingsModal from './ApiKeySettingsModal';
-import Chatbot from './Chatbot';
-import ModeSelector from './ModeSelector';
-import RegionSelector from './RegionSelector';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
-const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
+import { apiUrl, WS_BASE_URL } from '../config/api';
+import AgentChatPanel from './AgentChatPanel';
+import DomainScanPanel from './DomainScanPanel';
+import PolicyScannerHeader from './PolicyScannerHeader';
 
 function AgentPanel() {
     const [selectedRegions, setSelectedRegions] = useState([]);
@@ -102,7 +99,7 @@ function AgentPanel() {
 
     const getCostEstimate = async (domains) => {
         const response = await fetch(
-            `${API_BASE_URL}/api/cost-estimate?domains=${encodeURIComponent(domains)}`,
+            apiUrl(`/api/cost-estimate?domains=${encodeURIComponent(domains)}`),
             { method: 'POST' },
         );
 
@@ -134,7 +131,7 @@ function AgentPanel() {
 
     const fetchApiKeyStatus = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/settings/api-key`);
+            const res = await fetch(apiUrl('/api/settings/api-key'));
             if (!res.ok) throw new Error();
             const data = await res.json();
             setHasApiKey(data.exists);
@@ -320,7 +317,7 @@ function AgentPanel() {
         );
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/scans`, {
+            const response = await fetch(apiUrl('/api/scans'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(request),
@@ -341,7 +338,7 @@ function AgentPanel() {
             }
 
             if (scanQueueCancelledRef.current) {
-                await fetch(`${API_BASE_URL}/api/scans/${scan.scan_id}`, {
+                await fetch(apiUrl(`/api/scans/${scan.scan_id}`), {
                     method: 'DELETE',
                 });
                 return false;
@@ -422,7 +419,7 @@ function AgentPanel() {
 
         try {
             const scanId = activeScanId;
-            const response = await fetch(`${API_BASE_URL}/api/scans/${scanId}`, {
+            const response = await fetch(apiUrl(`/api/scans/${scanId}`), {
                 method: 'DELETE',
             });
 
@@ -457,78 +454,33 @@ function AgentPanel() {
     return (
         <div className="app-panel">
             <section className="Policy-scanner" aria-label="Policy Scanner">
-                <div className="policy-scanner-heading-row">
-                    <div>
-                        <h2 className="panel-heading">Policy Scanner</h2>
-                        <p className="text-block-small">Search for policies either by selecting domains or talking with the agent</p>
-                    </div>
-                    <button
-                        type="button"
-                        className="button"
-                        onClick={() => setIsSettingsOpen(true)}
-                    >
-                        API key settings
-                    </button>
-                </div>
-                <div className="domain-scan" aria-label="Domain scan">
-                    <div>
-                        <div className="settings-heading-panel">
-                        <div className="settings-heading-row">
-                            <h2 className="panel-heading">Domain Scan</h2>
-                        </div>
-                        <p className="text-block-small">Scan specific regions for policies.</p>
-                        </div>
-
-                        <div className="region-selector-scroll">
-                            <RegionSelector
-                                selectedItems={selectedRegions}
-                                onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
-                            />
-                        </div>
-                        <ModeSelector
-                            value={mode}
-                            onChange={setMode}
-                        />
-                        <output className={`cost-estimate ${costStatus}`} aria-live="polite">
-                            {getCostEstimateText()}
-                        </output>
-                    </div>
-                    <div className="agent-action-row">
-                        <button
-                            type="button"
-                            className="scan-button, button"
-                            onClick={scanSelectedRegion}
-                            disabled={isBusy || selectedRegions.length === 0 || !hasApiKey}
-                        >
-                            {isQueueRunning
-                                ? `Queued (${queuedScanCount})`
-                                : isScanRequestRunning || isScanRunning ? 'Scan running' : 'Scan'}
-                        </button>
-                        <button
-                            type="button"
-                            className="stop-scan-button, button"
-                            onClick={stopActiveScan}
-                            disabled={!isScanRunning && !isQueueRunning && !isScanRequestRunning}
-                        >
-                            Stop scan
-                        </button>
-                    </div>
-                </div>
-                <div className="Agent-scanner" aria-label="Agent chat">
-                    <ApiKeySettingsModal
-                        open={isSettingsOpen}
-                        onClose={() => {
-                            setIsSettingsOpen(false);
-                            fetchApiKeyStatus();
-                        }}
-                    />
-
-                    <Chatbot
-                        wsRef={wsRef}
-                        notice={chatNotice}
-                        onRunningChange={setIsChatRunning}
-                    />
-                </div>
+                <PolicyScannerHeader onOpenSettings={() => setIsSettingsOpen(true)} />
+                <DomainScanPanel
+                    selectedRegions={selectedRegions}
+                    onSelectionChange={(event, itemIds) => setSelectedRegions(itemIds)}
+                    mode={mode}
+                    onModeChange={setMode}
+                    costStatus={costStatus}
+                    costEstimateText={getCostEstimateText()}
+                    isBusy={isBusy}
+                    hasApiKey={hasApiKey}
+                    isQueueRunning={isQueueRunning}
+                    queuedScanCount={queuedScanCount}
+                    isScanRequestRunning={isScanRequestRunning}
+                    isScanRunning={isScanRunning}
+                    onScan={scanSelectedRegion}
+                    onStop={stopActiveScan}
+                />
+                <AgentChatPanel
+                    isSettingsOpen={isSettingsOpen}
+                    onCloseSettings={() => {
+                        setIsSettingsOpen(false);
+                        fetchApiKeyStatus();
+                    }}
+                    wsRef={wsRef}
+                    notice={chatNotice}
+                    onRunningChange={setIsChatRunning}
+                />
             </section>
         </div>
     );

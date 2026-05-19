@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+import { apiUrl } from '../config/api';
 
 const styles = {
   backdrop: {
@@ -135,7 +134,7 @@ function ApiKeySettingsModal({ open, onClose }) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const loadStatus = async () => {
-    const response = await fetch(`${API_BASE_URL}/api/settings/api-key`);
+    const response = await fetch(apiUrl('/api/settings/api-key'));
     if (!response.ok) {
       throw new Error('Could not load API key status.');
     }
@@ -156,7 +155,7 @@ function ApiKeySettingsModal({ open, onClose }) {
     setMessage('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
+      const response = await fetch(apiUrl('/api/settings/api-key'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: apiKey }),
@@ -183,7 +182,7 @@ function ApiKeySettingsModal({ open, onClose }) {
     setMessage('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
+      const response = await fetch(apiUrl('/api/settings/api-key'), {
         method: 'DELETE',
       });
 

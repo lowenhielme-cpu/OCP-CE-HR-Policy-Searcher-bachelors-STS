@@ -5,6 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { apiUrl } from '../config/api';
 import SavedPolicy, { formatTagLabel, getPolicyTags } from './SavedPolicy';
 
 function getPolicyKey(policy, index) {
@@ -32,8 +33,6 @@ function PolicyList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
     /*
     const loadMockPolicies = async () => {
       try {
@@ -56,8 +55,8 @@ function PolicyList() {
     const loadSavedPolicies = async () => {
       try {
         const [policiesResponse, tagsResponse] = await Promise.all([
-          fetch(`${apiUrl}/api/policies`),
-          fetch(`${apiUrl}/api/tags`),
+          fetch(apiUrl('/api/policies')),
+          fetch(apiUrl('/api/tags')),
         ]);
 
         if (!policiesResponse.ok) {

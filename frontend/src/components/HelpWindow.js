@@ -202,7 +202,7 @@ function HelpWindow({ open, onClose, title = 'Welcome to Policy Pulse' }) {
             <div>
               <p style={styles.stepTitle}>Pick a scan mode</p>
               <p style={styles.stepText}>
-                Use Standard for configured sources, Discover for finding new coverage, or Deep for broader crawling.
+                Use Standard for configured sources, Discover for finding new coverage and sources, or Deep for a more expansive and thorough crawl at a higher cost.
               </p>
             </div>
           </li>
