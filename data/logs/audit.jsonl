@@ -41,3 +41,4 @@
 {"event": "scan_completed", "scan_id": "576617d6", "domain_group": "alberta", "domains_scanned": 2, "policies_found": 0, "cost_usd": 0.0146, "duration_s": 692.6758, "timestamp": "2026-05-15T19:14:28.560485+00:00"}
 {"event": "scan_started", "scan_id": "e13a6e49", "domain_count": 2, "domain_group": "british_columbia", "timestamp": "2026-05-15T19:14:29.029180+00:00"}
 {"event": "scan_completed", "scan_id": "e13a6e49", "domain_group": "british_columbia", "domains_scanned": 2, "policies_found": 0, "cost_usd": 0.0, "duration_s": 313.657342, "timestamp": "2026-05-15T19:19:42.685522+00:00"}
+{"event": "scan_started", "scan_id": "c9e0c3d1", "domain_count": 1, "domain_group": "telangana_dc", "timestamp": "2026-05-19T15:34:49.694972+00:00"}

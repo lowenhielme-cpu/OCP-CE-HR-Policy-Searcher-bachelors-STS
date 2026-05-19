@@ -1,188 +1,54 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { apiUrl, WS_BASE_URL } from '../config/api';
+import React, { useCallback, useEffect, useState } from 'react';
+import { apiUrl } from '../config/api';
+import useAgentSocket from '../hooks/useAgentSocket';
+import useCostEstimate from '../hooks/useCostEstimate';
+import useScanQueue from '../hooks/useScanQueue';
+import { buildScanRequests } from '../utils/scanTargets';
 import AgentChatPanel from './AgentChatPanel';
 import DomainScanPanel from './DomainScanPanel';
 import PolicyScannerHeader from './PolicyScannerHeader';
 
-function splitSelection(items) {
-    return {
-        categories: items
-            .filter((item) => item.startsWith('category:'))
-            .map((item) => item.slice('category:'.length)),
-        tags: items
-            .filter((item) => item.startsWith('tag:'))
-            .map((item) => item.slice('tag:'.length)),
-        targets: items.filter(
-            (item) => !item.startsWith('category:') && !item.startsWith('tag:'),
-        ),
-    };
-}
-
-function normalizeTarget(item) {
-    if (item.startsWith('group:') && item.includes(':region:')) {
-        return item.slice(item.lastIndexOf(':region:') + ':region:'.length);
-    }
-    if (item.startsWith('group:')) {
-        return item.slice('group:'.length);
-    }
-    if (item.startsWith('region:')) {
-        return item.slice('region:'.length);
-    }
-    return item;
-}
-
-function parseDomainTarget(item) {
-    if (!item.startsWith('group:') || !item.includes(':region:')) {
-        return { group: normalizeTarget(item), region: null };
-    }
-
-    const regionMarker = ':region:';
-    const markerIndex = item.lastIndexOf(regionMarker);
-    return {
-        group: item.slice('group:'.length, markerIndex),
-        region: item.slice(markerIndex + regionMarker.length),
-    };
-}
-
-async function resolveDomainsForTargets(targets) {
-    const domainById = new Map();
-
-    await Promise.all(targets.map(async (target) => {
-        const { group, region } = parseDomainTarget(target);
-        const response = await fetch(
-            apiUrl(`/api/domains?group=${encodeURIComponent(group)}`),
-        );
-
-        if (!response.ok) {
-            throw new Error(`Could not resolve domains for ${group} (${response.status})`);
-        }
-
-        const data = await response.json();
-        (data.domains || [])
-            .filter((domain) => !region || (domain.region || []).includes(region))
-            .forEach((domain) => {
-                if (domain.id) {
-                    domainById.set(domain.id, domain);
-                }
-            });
-    }));
-
-    return [...domainById.values()];
-}
-
 function AgentPanel() {
     const [selectedRegions, setSelectedRegions] = useState([]);
     const [mode, setMode] = useState('standard');
-    const [isChatRunning, setIsChatRunning] = useState(false);
-    const [isScanRequestRunning, setIsScanRequestRunning] = useState(false);
-    const [activeScanId, setActiveScanId] = useState(null);
-    const [costEstimate, setCostEstimate] = useState(null);
-    const [costStatus, setCostStatus] = useState('idle');
     const [chatNotice, setChatNotice] = useState(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [hasApiKey, setHasApiKey] = useState(false);
-    const wsRef = useRef(null);
-    const scanWsRef = useRef(null);
-    const scanQueueRef = useRef([]);
-    const scanQueueCancelledRef = useRef(false);
-    const [queuedScanCount, setQueuedScanCount] = useState(0);
-    const isScanRunning = Boolean(activeScanId);
-    const isQueueRunning = queuedScanCount > 0;
-    const isBusy = isChatRunning || isScanRunning || isScanRequestRunning || isQueueRunning;
     const isStandardMode = mode === 'standard';
     const scanOptions = {
         discover: mode === 'discover',
         deep: mode === 'deep',
     };
 
-    const pushNotice = (type, text) => {
+    const pushNotice = useCallback((type, text) => {
         setChatNotice({
             id: Date.now(),
             type,
             text,
         });
-    };
-
-    const connectWebSocket = useCallback(() => {
-        if (wsRef.current) return;
-
-        const ws = new WebSocket(`${WS_BASE_URL}/api/agent/ws`);
-        wsRef.current = ws;
-
-        ws.onclose = () => {
-            wsRef.current = null;
-            setIsChatRunning(false);
-        };
-
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            setIsChatRunning(false);
-            pushNotice('error', 'Connection error.');
-        };
     }, []);
 
-    const buildScanRequests = async () => {
-        const { categories, tags, targets } = splitSelection(selectedRegions);
-        const domainMatchesFilters = (domain) => (
-            (!categories[0] || domain.category === categories[0])
-            && (tags.length === 0 || tags.some((tag) => (domain.tags || []).includes(tag)))
-        );
-        const scanTargets = scanOptions.discover
-            ? targets.map(normalizeTarget)
-            : (await resolveDomainsForTargets(targets))
-                .filter(domainMatchesFilters)
-                .map((domain) => domain.id);
-        const baseRequest = {
-            max_concurrent: scanOptions.deep ? 10 : 5,
-            skip_llm: false,
-            dry_run: false,
-            deep: scanOptions.deep,
-            discover: scanOptions.discover,
-            category: categories[0] || null,
-            tags: tags.length > 0 ? tags : null,
-        };
+    const { wsRef, isChatRunning, setIsChatRunning } = useAgentSocket({
+        onNotice: pushNotice,
+    });
+    const { costStatus, costEstimateText } = useCostEstimate({
+        selectedRegions,
+        isStandardMode,
+    });
+    const {
+        isScanRequestRunning,
+        isScanRunning,
+        isQueueRunning,
+        queuedScanCount,
+        runScanQueue,
+        stopActiveScan,
+    } = useScanQueue({
+        onNotice: pushNotice,
+    });
 
-        return {
-            requests: (scanTargets.length > 0 ? scanTargets : ['all']).map((target) => ({
-                ...baseRequest,
-                domains: target,
-            })),
-        };
-    };
+    const isBusy = isChatRunning || isScanRunning || isScanRequestRunning || isQueueRunning;
 
-    const getCostEstimate = async (domains) => {
-        const response = await fetch(
-            apiUrl(`/api/cost-estimate?domains=${encodeURIComponent(domains)}`),
-            { method: 'POST' },
-        );
-
-        if (!response.ok) {
-            throw new Error(`Cost estimate failed for ${domains} (${response.status})`);
-        }
-
-        return response.json();
-    };
-
-    const sumCostEstimates = (estimates) => estimates.reduce(
-        (total, estimate) => ({
-            domain_count: total.domain_count + (estimate.domain_count || 0),
-            estimated_pages: total.estimated_pages + (estimate.estimated_pages || 0),
-            estimated_keyword_passes: total.estimated_keyword_passes + (estimate.estimated_keyword_passes || 0),
-            estimated_screening_calls: total.estimated_screening_calls + (estimate.estimated_screening_calls || 0),
-            estimated_analysis_calls: total.estimated_analysis_calls + (estimate.estimated_analysis_calls || 0),
-            estimated_cost_usd: total.estimated_cost_usd + (estimate.estimated_cost_usd || 0),
-        }),
-        {
-            domain_count: 0,
-            estimated_pages: 0,
-            estimated_keyword_passes: 0,
-            estimated_screening_calls: 0,
-            estimated_analysis_calls: 0,
-            estimated_cost_usd: 0,
-        },
-    );
-
-    const fetchApiKeyStatus = async () => {
+    const fetchApiKeyStatus = useCallback(async () => {
         try {
             const res = await fetch(apiUrl('/api/settings/api-key'));
             if (!res.ok) throw new Error();
@@ -191,258 +57,14 @@ function AgentPanel() {
         } catch {
             setHasApiKey(false);
         }
-    };
-
-    useEffect(() => {
-        let isCurrent = true;
-        const { categories, tags, targets } = splitSelection(selectedRegions);
-
-        if (!isStandardMode) {
-            setCostEstimate(null);
-            setCostStatus('standard_only');
-            return () => {
-                isCurrent = false;
-            };
-        }
-
-        if (targets.length === 0) {
-            setCostEstimate(null);
-            setCostStatus(selectedRegions.length === 0 ? 'idle' : 'filters_only');
-            return () => {
-                isCurrent = false;
-            };
-        }
-
-        setCostStatus('loading');
-
-        resolveDomainsForTargets(targets)
-            .then((domains) => Promise.all(domains.map((domain) => getCostEstimate(domain.id))))
-            .then((estimates) => {
-                if (!isCurrent) return;
-                setCostEstimate({
-                    ...sumCostEstimates(estimates),
-                    target_count: estimates.length,
-                    has_filters: categories.length > 0 || tags.length > 0,
-                });
-                setCostStatus('ready');
-            })
-            .catch(() => {
-                if (!isCurrent) return;
-                setCostEstimate(null);
-                setCostStatus('error');
-            });
-
-        return () => {
-            isCurrent = false;
-        };
-    }, [selectedRegions, isStandardMode]);
-
-    const getCostEstimateText = () => {
-        if (costStatus === 'loading') {
-            return 'Estimating...';
-        }
-        if (costStatus === 'filters_only') {
-            return 'Select a scan target';
-        }
-        if (costStatus === 'standard_only') {
-            return 'Cost estimates are only available in standard mode.';
-        }
-        if (costStatus === 'error') {
-            return 'Estimate unavailable';
-        }
-        if (costStatus === 'ready' && costEstimate) {
-            const cost = Number(costEstimate.estimated_cost_usd || 0).toFixed(2);
-            const targetLabel = costEstimate.target_count > 1 ? `${costEstimate.target_count} targets` : '1 target';
-            const filterNote = costEstimate.has_filters ? ', filters not included' : '';
-            return `$${cost} (${targetLabel}${filterNote})`;
-        }
-        return 'No cost estimate';
-    };
-
-    const formatScanEvent = (event) => {
-        const domainLabel = event.domain_id ? ` (${event.domain_id})` : '';
-        const data = event.data || {};
-
-        switch (event.type) {
-            case 'scan_started':
-                return `Scan ${event.scan_id} started with ${data.domain_count ?? '?'} domains.`;
-            case 'domain_started':
-                return `Started ${data.domain_name || event.domain_id || 'domain'}.`;
-            case 'policy_found':
-                return `Policy found${domainLabel}: ${data.policy_name || data.url || 'new policy'}.`;
-            case 'domain_complete':
-                return `Completed${domainLabel}: ${data.pages ?? 0} pages, ${data.policies ?? 0} policies, ${data.errors ?? 0} errors.`;
-            case 'verification_complete':
-                return `Verification complete: ${data.passed ?? 0} passed, ${data.flagged ?? 0} flagged.`;
-            case 'audit_complete':
-                return 'Audit advisory complete.';
-            case 'scan_complete':
-                return `Scan complete: ${data.total_policies ?? 0} policies found.`;
-            case 'error':
-                return `Scan error${domainLabel}: ${data.error || 'Unknown error'}.`;
-            default:
-                return null;
-        }
-    };
-
-    const connectScanWebSocket = (scanId, callbacks = {}) => {
-        scanWsRef.current?.close();
-
-        const scanWs = new WebSocket(`${WS_BASE_URL}/api/scans/${scanId}/ws`);
-        scanWsRef.current = scanWs;
-        let settled = false;
-        const finish = (completed) => {
-            if (settled) return;
-            settled = true;
-            if (completed) {
-                callbacks.onComplete?.();
-            } else {
-                callbacks.onError?.();
-            }
-        };
-
-        scanWs.onmessage = (event) => {
-            let payload;
-            try {
-                payload = JSON.parse(event.data);
-            } catch {
-                return;
-            }
-
-            const notice = formatScanEvent(payload);
-            if (notice) {
-                pushNotice(payload.type === 'error' ? 'error' : 'system', notice);
-            }
-
-            if (payload.type === 'scan_complete' || payload.type === 'error') {
-                if (payload.type === 'scan_complete') {
-                    window.dispatchEvent(new Event('policy-data-changed'));
-                }
-                finish(payload.type === 'scan_complete');
-                setActiveScanId(null);
-                scanWs.close();
-            }
-        };
-
-        scanWs.onerror = () => {
-            pushNotice('error', 'Scan progress connection error.');
-            finish(false);
-            scanWs.close();
-        };
-
-        scanWs.onclose = () => {
-            if (scanWsRef.current === scanWs) {
-                scanWsRef.current = null;
-            }
-
-            setActiveScanId((current) => {
-                if (current === scanId) {
-                    return null;
-                }
-                return current;
-            });
-
-            finish(false);
-        };
-    };
-
-    const startScanRequest = async (request, index, total) => {
-        setIsScanRequestRunning(true);
-        pushNotice(
-            'system',
-            request.discover
-                ? `Starting discovery ${index + 1}/${total} for "${request.domains}" via /api/scans.`
-                : `Starting scan ${index + 1}/${total} for "${request.domains}" via /api/scans.`,
-        );
-
-        try {
-            const response = await fetch(apiUrl('/api/scans'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || `Scan request failed with ${response.status}`);
-            }
-
-            const scan = await response.json();
-            if (scan.discover) {
-                pushNotice(
-                    'system',
-                    scan.response || `Discovery for "${request.domains}" completed.`,
-                );
-                window.dispatchEvent(new Event('policy-data-changed'));
-                return !scanQueueCancelledRef.current;
-            }
-
-            if (scanQueueCancelledRef.current) {
-                await fetch(apiUrl(`/api/scans/${scan.scan_id}`), {
-                    method: 'DELETE',
-                });
-                return false;
-            }
-
-            setActiveScanId(scan.scan_id);
-            pushNotice(
-                'system',
-                `Scan ${scan.scan_id} queued (${scan.domain_count} domains). Listening for progress.`,
-            );
-
-            return await new Promise((resolve) => {
-                connectScanWebSocket(scan.scan_id, {
-                    onComplete: () => resolve(true),
-                    onError: () => resolve(false),
-                });
-            });
-        } catch (error) {
-            pushNotice('error', `Could not start scan: ${error.message}`);
-            return false;
-        } finally {
-            setIsScanRequestRunning(false);
-        }
-    };
-
-    const runScanQueue = async (requests) => {
-        scanQueueRef.current = requests;
-        scanQueueCancelledRef.current = false;
-        setQueuedScanCount(requests.length);
-
-        try {
-            for (let index = 0; index < requests.length; index += 1) {
-                if (scanQueueCancelledRef.current || scanQueueRef.current.length === 0) return;
-
-                const completed = await startScanRequest(requests[index], index, requests.length);
-                scanQueueRef.current = scanQueueRef.current.slice(1);
-                setQueuedScanCount(scanQueueRef.current.length);
-
-                if (!completed) {
-                    scanQueueRef.current = [];
-                    setQueuedScanCount(0);
-                    pushNotice('error', 'Scan queue stopped.');
-                    return;
-                }
-            }
-
-            if (requests.length > 1) {
-                pushNotice(
-                    'system',
-                    `Scan queue complete: ${requests.length} targets processed.`,
-                );
-            }
-        } finally {
-            scanQueueRef.current = [];
-            setQueuedScanCount(0);
-        }
-    };
+    }, []);
 
     const scanSelectedRegion = async () => {
         if (isBusy || selectedRegions.length === 0 || !hasApiKey) return;
 
         let requests;
         try {
-            ({ requests } = await buildScanRequests());
+            requests = await buildScanRequests(selectedRegions, scanOptions);
         } catch (error) {
             pushNotice('error', `Could not resolve selected domains: ${error.message}`);
             return;
@@ -455,49 +77,9 @@ function AgentPanel() {
         await runScanQueue(requests);
     };
 
-    const stopActiveScan = async () => {
-        scanQueueRef.current = [];
-        scanQueueCancelledRef.current = true;
-        setQueuedScanCount(0);
-        if (!activeScanId) {
-            pushNotice('system', 'Cleared scan queue.');
-            return;
-        }
-
-        try {
-            const scanId = activeScanId;
-            const response = await fetch(apiUrl(`/api/scans/${scanId}`), {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || `Stop request failed with ${response.status}`);
-            }
-
-            scanWsRef.current?.close();
-            scanWsRef.current = null;
-            setActiveScanId(null);
-            window.dispatchEvent(new Event('policy-data-changed'));
-            pushNotice('system', `Stopped scan ${scanId}.`);
-        } catch (error) {
-            pushNotice('error', `Could not stop scan: ${error.message}`);
-        }
-    };
-
-    useEffect(() => {
-        const connectTimer = window.setTimeout(connectWebSocket, 0);
-
-        return () => {
-            window.clearTimeout(connectTimer);
-            scanWsRef.current?.close();
-            wsRef.current?.close();
-        };
-    }, [connectWebSocket]);
-
     useEffect(() => {
         fetchApiKeyStatus();
-    }, []);
+    }, [fetchApiKeyStatus]);
 
     return (
         <div className="app-panel">
@@ -509,7 +91,7 @@ function AgentPanel() {
                     mode={mode}
                     onModeChange={setMode}
                     costStatus={costStatus}
-                    costEstimateText={getCostEstimateText()}
+                    costEstimateText={costEstimateText}
                     isBusy={isBusy}
                     hasApiKey={hasApiKey}
                     isQueueRunning={isQueueRunning}
