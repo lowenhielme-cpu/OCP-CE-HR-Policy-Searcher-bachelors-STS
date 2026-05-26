@@ -177,6 +177,7 @@ select,
 .domain-scan {
   display: flex;
   min-height: 520px;
+  max-height: 80vh;
   flex-direction: column;
   border: 1px solid #d7dee8;
   border-radius: 8px;
