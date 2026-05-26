@@ -36,10 +36,10 @@
 - [x] Multiple filters at the same time
 
 ## Other
-- [] File for labels?
 - [] Copyright stuff for MUI
 - [] Remove ToDos
 - [] Clean and add comments
-- [] Remove Components views
+- [x] Remove Components views
 - [] Name of the application
 - [] Explanatory text for features
+- [x] Fix setup script

@@ -9,10 +9,11 @@
 #   1. Checks for Python 3.11+
 #   2. Creates a virtual environment (.venv)
 #   3. Installs the project and its dependencies
-#   4. Copies config/example.env -> .env (if .env doesn't exist)
-#   5. Prompts for your Anthropic API key
-#   6. Prompts for Google Sheets credentials (optional)
-#   7. Tells you how to run the agent
+#   4. Checks for Node.js/npm and installs frontend dependencies
+#   5. Copies config/example.env -> .env (if .env doesn't exist)
+#   6. Prompts for your Anthropic API key
+#   7. Prompts for Google Sheets credentials (optional)
+#   8. Tells you how to run the app and agent
 #
 # Note: If you get "cannot be loaded because running scripts is disabled",
 #       run this first (as Administrator):
@@ -28,6 +29,22 @@ $ErrorActionPreference = "Stop"
 function Write-Info($msg)  { Write-Host "[OK] $msg" -ForegroundColor Green }
 function Write-Warn($msg)  { Write-Host "[!!] $msg" -ForegroundColor Yellow }
 function Write-Err($msg)   { Write-Host "[X]  $msg" -ForegroundColor Red }
+
+function Install-NpmDependencies($dir, $label) {
+    Push-Location $dir
+    try {
+        if (Test-Path "package-lock.json") {
+            Write-Host "Installing $label dependencies with npm ci..."
+            & $npmCmd ci
+        } else {
+            Write-Host "Installing $label dependencies with npm install..."
+            & $npmCmd install
+        }
+    } finally {
+        Pop-Location
+    }
+    Write-Info "Installed $label dependencies"
+}
 
 # --------------------------------------------------------------------------
 # 1. Find Python 3.11+
@@ -104,7 +121,42 @@ if ($playwrightExit -eq 0) {
 }
 
 # --------------------------------------------------------------------------
-# 4. Copy example.env -> .env and prompt for API key
+# 4. Install frontend dependencies
+# --------------------------------------------------------------------------
+$nodeCmd = $null
+foreach ($candidate in @("node.exe", "node")) {
+    $cmd = Get-Command $candidate -ErrorAction SilentlyContinue
+    if ($cmd) {
+        $nodeCmd = $cmd.Source
+        break
+    }
+}
+
+$npmCmd = $null
+foreach ($candidate in @("npm.cmd", "npm")) {
+    $cmd = Get-Command $candidate -ErrorAction SilentlyContinue
+    if ($cmd) {
+        $npmCmd = $cmd.Source
+        break
+    }
+}
+
+if (-not $nodeCmd -or -not $npmCmd) {
+    Write-Err "Node.js and npm are required for the React frontend but were not found."
+    Write-Host "  Install the current LTS version from: https://nodejs.org/"
+    Write-Host "  Then rerun this script."
+    exit 1
+}
+
+$nodeVersion = & $nodeCmd --version
+$npmVersion = & $npmCmd --version
+Write-Info "Found Node.js $nodeVersion and npm $npmVersion"
+
+Install-NpmDependencies "." "root dev tooling"
+Install-NpmDependencies "frontend" "frontend"
+
+# --------------------------------------------------------------------------
+# 5. Copy example.env -> .env and prompt for API key
 # --------------------------------------------------------------------------
 $envCreated = $false
 if (-not (Test-Path ".env")) {
@@ -140,7 +192,7 @@ if ($envContent -match "your-key-here" -or $envContent -match "your-real-key-her
 }
 
 # --------------------------------------------------------------------------
-# 5. Google Sheets setup (optional)
+# 6. Google Sheets setup (optional)
 # --------------------------------------------------------------------------
 $envContent = Get-Content ".env" -Raw
 # Check for UNCOMMENTED credential lines (lines NOT starting with #).
@@ -223,17 +275,20 @@ if (-not $hasCredsFile -and -not $hasCredsValue) {
 }
 
 # --------------------------------------------------------------------------
-# 6. Done!
+# 7. Done!
 # --------------------------------------------------------------------------
 Write-Host ""
 Write-Host "Setup complete!" -ForegroundColor White -BackgroundColor DarkGreen
 Write-Host ""
 Write-Host "Next steps:"
 Write-Host ""
-Write-Host "  1. Activate the virtual environment (needed each new terminal):"
-Write-Host "     .venv\Scripts\Activate.ps1"
+Write-Host "  1. Run the full web app (backend + frontend):"
+Write-Host "     npm run dev"
 Write-Host ""
-Write-Host "  2. Run the agent:"
-Write-Host "     python -m src.agent"
+Write-Host "     Backend:  http://localhost:8000"
+Write-Host "     Frontend: http://localhost:3000"
+Write-Host ""
+Write-Host "  2. Or run the agent only:"
+Write-Host "     .venv\Scripts\python.exe -m src.agent"
 Write-Host ""
 Write-Host ""
