@@ -1,6 +1,7 @@
 import React from 'react';
 import ModeSelector from './ModeSelector';
 import RegionSelector from './RegionSelector';
+import Tooltip from '@mui/material/Tooltip';
 
 function DomainScanPanel({
     selectedRegions,
@@ -38,9 +39,11 @@ function DomainScanPanel({
                     value={mode}
                     onChange={onModeChange}
                 />
-                <output className={`cost-estimate ${costStatus}`} aria-live="polite">
-                    {costEstimateText}
-                </output>
+                <Tooltip title="Please note that this is only an estimate and may not reflect the actual cost" placement="top" arrow>
+                    <output className={`cost-estimate ${costStatus}`} aria-live="polite">
+                        {costEstimateText}
+                    </output>
+                </Tooltip>
             </div>
             <div className="agent-action-row">
                 <button
