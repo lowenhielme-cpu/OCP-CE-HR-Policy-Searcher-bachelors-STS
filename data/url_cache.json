@@ -261,11 +261,119 @@
       "analyzed_date": "2026-05-15T19:14:25.169612+00:00",
       "expires_date": "2026-06-14T19:14:25.169612+00:00",
       "policy_type": ""
+    },
+    "https://energiavirasto.fi/en/energy-efficiency": {
+      "url": "https://energiavirasto.fi/en/energy-efficiency",
+      "is_relevant": true,
+      "relevance_score": 6,
+      "content_hash": "381bca229613ca23",
+      "analyzed_date": "2026-05-28T14:06:58.626835+00:00",
+      "expires_date": "2026-06-27T14:06:58.626835+00:00",
+      "policy_type": "law"
+    },
+    "https://energiavirasto.fi/en": {
+      "url": "https://energiavirasto.fi/en",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "aa5893e1e86298d9",
+      "analyzed_date": "2026-05-28T14:06:59.694775+00:00",
+      "expires_date": "2026-06-27T14:06:59.694775+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/en/frontpage": {
+      "url": "https://energiavirasto.fi/en/frontpage",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "aa5893e1e86298d9",
+      "analyzed_date": "2026-05-28T14:07:00.884430+00:00",
+      "expires_date": "2026-06-27T14:07:00.884430+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/en/-/reporting-from-data-centres-to-the-european-database-has-started": {
+      "url": "https://energiavirasto.fi/en/-/reporting-from-data-centres-to-the-european-database-has-started",
+      "is_relevant": true,
+      "relevance_score": 6,
+      "content_hash": "f67e69c4ac99477d",
+      "analyzed_date": "2026-05-28T14:07:14.136810+00:00",
+      "expires_date": "2026-06-27T14:07:14.136810+00:00",
+      "policy_type": "regulation"
+    },
+    "https://energiavirasto.fi/en/renewable-energy": {
+      "url": "https://energiavirasto.fi/en/renewable-energy",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "a67470e074e73b09",
+      "analyzed_date": "2026-05-28T14:07:15.188271+00:00",
+      "expires_date": "2026-06-27T14:07:15.188271+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/en/-/new-energy-efficiency-agreements-have-been-negotiated-for-2026-2035": {
+      "url": "https://energiavirasto.fi/en/-/new-energy-efficiency-agreements-have-been-negotiated-for-2026-2035",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "db12dd7cfd446947",
+      "analyzed_date": "2026-05-28T14:07:17.018643+00:00",
+      "expires_date": "2026-06-27T14:07:17.018643+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/en/sustainability-criteria": {
+      "url": "https://energiavirasto.fi/en/sustainability-criteria",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "d5a98aefb1db73c9",
+      "analyzed_date": "2026-05-28T14:07:18.653046+00:00",
+      "expires_date": "2026-06-27T14:07:18.653046+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/documents/11120570/207255594/Laitoskohtaiset+tiedot+vuosien+2013-2023+p\u00e4\u00e4st\u00f6ist\u00e4.pdf/622f216f-8453-f8c3-b6d9-ec917e2811ee?t=1712153387476": {
+      "url": "https://energiavirasto.fi/documents/11120570/207255594/Laitoskohtaiset+tiedot+vuosien+2013-2023+p\u00e4\u00e4st\u00f6ist\u00e4.pdf/622f216f-8453-f8c3-b6d9-ec917e2811ee?t=1712153387476",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "8b3e85a7c8a81e68",
+      "analyzed_date": "2026-05-28T14:07:39.352878+00:00",
+      "expires_date": "2026-06-27T14:07:39.352878+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/documents/11120570/68290104/Yrityskohtaiset+p\u00e4\u00e4st\u00f6tiedot+2013-2020.pdf/5848ea31-afbd-e4f9-ddd6-d2cdd9b47749?t=1617281705419": {
+      "url": "https://energiavirasto.fi/documents/11120570/68290104/Yrityskohtaiset+p\u00e4\u00e4st\u00f6tiedot+2013-2020.pdf/5848ea31-afbd-e4f9-ddd6-d2cdd9b47749?t=1617281705419",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "46238e3230860c8d",
+      "analyzed_date": "2026-05-28T14:08:15.002947+00:00",
+      "expires_date": "2026-06-27T14:08:15.002947+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/documents/11120570/115455006/Yrityskohtaiset+p\u00e4\u00e4st\u00f6tiedot+2013-2021.pdf/731707f7-98f7-4233-0e3a-c9850125ca49?t=1648813930329": {
+      "url": "https://energiavirasto.fi/documents/11120570/115455006/Yrityskohtaiset+p\u00e4\u00e4st\u00f6tiedot+2013-2021.pdf/731707f7-98f7-4233-0e3a-c9850125ca49?t=1648813930329",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "46238e3230860c8d",
+      "analyzed_date": "2026-05-28T14:09:28.885569+00:00",
+      "expires_date": "2026-06-27T14:09:28.885569+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/documents/11120570/12862527/tcb18_final_report_gas_appendix_190717_V12.pdf/53657f90-f16e-9141-0d83-6be832fa59a3?t=1568026105000": {
+      "url": "https://energiavirasto.fi/documents/11120570/12862527/tcb18_final_report_gas_appendix_190717_V12.pdf/53657f90-f16e-9141-0d83-6be832fa59a3?t=1568026105000",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "0f78c570048a234e",
+      "analyzed_date": "2026-05-28T14:10:28.662904+00:00",
+      "expires_date": "2026-06-27T14:10:28.662904+00:00",
+      "policy_type": ""
+    },
+    "https://energiavirasto.fi/news-archive": {
+      "url": "https://energiavirasto.fi/news-archive",
+      "is_relevant": false,
+      "relevance_score": 0,
+      "content_hash": "e27e4de6e33da6b1",
+      "analyzed_date": "2026-05-28T14:11:30.835922+00:00",
+      "expires_date": "2026-06-27T14:11:30.835922+00:00",
+      "policy_type": ""
     }
   },
   "metadata": {
     "version": 1,
-    "last_saved": "2026-05-26T09:05:57.486199+00:00",
-    "total_entries": 29
+    "last_saved": "2026-05-28T14:12:18.502800+00:00",
+    "total_entries": 41
   }
 }

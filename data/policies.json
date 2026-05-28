@@ -248,5 +248,65 @@
       "https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:32012L0027",
       "https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:32018L0844"
     ]
+  },
+  {
+    "url": "https://energiavirasto.fi/en/energy-efficiency",
+    "policy_name": "Energy Efficiency Act (Energiatehokkuuslaki) as amended, implementing EU Energy Efficiency Directive 2023/1791",
+    "jurisdiction": "Finland (EU)",
+    "policy_type": "law",
+    "summary": "Finland's Energy Authority (Energiavirasto) implements the EU Energy Efficiency Directive (2023/1791) through the Energy Efficiency Act (1429/2014, amended by Act 1382/2025), which entered into force on 1 January 2026. The framework includes supervisory responsibilities over cost-benefit analyses for cogeneration and waste heat use, mandatory energy management systems, and energy audits. Data centers with power demand of at least 500 kW are required to report operational data annually to the European Commission's database, with reporting having commenced in autumn 2024.",
+    "relevance_score": 6,
+    "effective_date": "2026-01-01",
+    "source_language": "en",
+    "bill_number": null,
+    "key_requirements": "1. Data centers with power demand \u2265500 kW must report data to the European Commission's European database annually by 15 May (for previous year's activities), starting autumn 2024. 2. Cost-benefit analyses required for cogeneration and waste heat use, supervised by the Energy Authority. 3. Mandatory energy management systems and energy audits for qualifying companies. 4. 'Energy efficiency first' principle compliance required. 5. EU-level target of 11.7% additional reduction in energy consumption by 2030 vs. 2020 reference scenario.",
+    "discovered_at": "2026-05-28T14:06:58.626835",
+    "crawl_status": "success",
+    "error_details": null,
+    "review_status": "new",
+    "scan_id": "7cb3df05",
+    "domain_id": "energiavirasto_fi",
+    "verification_flags": [],
+    "referenced_policies": [
+      "EU Energy Efficiency Directive 2023/1791 (EED, recast)",
+      "EU Energy Efficiency Directive 2018/2002",
+      "EU Energy Efficiency Directive 2012/27/EU",
+      "Energy Efficiency Act (Energiatehokkuuslaki) 1429/2014",
+      "Act amending the Energy Efficiency Act 1382/2025",
+      "EU Fit for 55 package",
+      "EED Article 7 (cumulative energy savings obligation)",
+      "EED Article 26 (data centers - implied via reporting requirement)"
+    ],
+    "referenced_urls": [
+      "https://energiavirasto.fi/en/energy-efficiency"
+    ]
+  },
+  {
+    "url": "https://energiavirasto.fi/en/-/reporting-from-data-centres-to-the-european-database-has-started",
+    "policy_name": "Reporting from data centres to the European database \u2013 Energy Authority (Energiavirasto) coordination of Commission Delegated Regulation (EU) 2024/1364",
+    "jurisdiction": "Finland (EU-wide regulation)",
+    "policy_type": "regulation",
+    "summary": "Finland's Energy Authority (Energiavirasto) is coordinating mandatory reporting by data centre operators (\u2265500 kW IT power demand) to the European Commission's database under EU Delegated Regulation 2024/1364, starting autumn 2024. Key performance indicators include energy consumption, power utilisation, temperature set points, waste heat utilisation, water usage, and renewable energy use. The collected data will inform a future EU sustainability rating scheme for data centres and may lead to legislative proposals including minimum energy efficiency requirements.",
+    "relevance_score": 6,
+    "effective_date": "2024-10-14",
+    "source_language": "en",
+    "bill_number": null,
+    "key_requirements": "1. Data centres with installed IT power demand \u2265500 kW must report annually to the European Commission's database. 2. Annual reports due by 15 May each year (first reporting period covers 2023 operations). 3. KPIs to be reported include: energy consumption, power utilisation, temperature set points, waste heat utilisation, water usage, and renewable energy use. 4. Operators must contact the Finnish Energy Authority (sahkomarkkinat@energiavirasto.fi) to activate user IDs for the reporting system. 5. By 15 May 2025, the Commission must assess submitted data and may propose minimum energy efficiency performance requirements for data centres.",
+    "discovered_at": "2026-05-28T14:07:14.136810",
+    "crawl_status": "success",
+    "error_details": null,
+    "review_status": "new",
+    "scan_id": "7cb3df05",
+    "domain_id": "energiavirasto_fi",
+    "verification_flags": [],
+    "referenced_policies": [
+      "Commission Delegated Regulation (EU) 2024/1364",
+      "EU Digital Agenda",
+      "EU Energy Efficiency Directive (implied)"
+    ],
+    "referenced_urls": [
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32024R1364",
+      "https://energiavirasto.fi/en/obligations-of-data-centres"
+    ]
   }
 ]
